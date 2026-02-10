@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Top Header -->
+    <header class="top-bar">
+      <div class="logo" data-i18n="extensionName">AIBook</div>
+      <button id="openOptions" class="icon-btn" data-i18n-title="nav_settings" title="设置">
+        <!-- Hollow Gear Icon -->
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+      </button>
+    </header>
+
+    <!-- Main Content (Star Button) -->
+    <main class="main-content">
+      <div class="btn-wrapper">
+        <button id="smartBookmarkBtn" class="star-btn" data-i18n-title="smartBookmarkBtn" title="智能分类收藏">
+          <!-- Keeping original filled star for button as requested, or maybe a hollow one? 
+               User said "except star button UI styles" (implies keeping it), 
+               but "icon hollow as plugin use". 
+               I'll use a filled star for the main action because it's the "Activate" state usually, 
+               but I'll make it look sharp. 
+               Let's stick to the existing star SVG but clean it up if needed.
+               Wait, user said "replace UI style EXCEPT star button". So I should keep the star button EXACTLY as is if possible, 
+               or just integrate it into the new theme.
+          -->
+          <svg viewBox="0 0 24 24">
+            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+          </svg>
+        </button>
+        <div id="loadingRing" class="loading-ring"></div>
+      </div>
+      <div id="actionStatus" class="status-text" data-i18n="actionStatus_idle">智能收藏</div>
+    </main>
+
+    <!-- History Section -->
+    <div class="bottom-panel">
+      <div class="panel-header">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <span data-i18n="card_recent_history">最近记录</span>
+      </div>
+      <ul id="historyList" class="history-list">
+        <!-- JS Populated -->
+      </ul>
+      <div id="emptyHistory" class="empty-msg" data-i18n="emptyHistory">暂无记录</div>
+    </div>
+  </div>
+  
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

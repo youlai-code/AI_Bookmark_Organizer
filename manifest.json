@@ -1,0 +1,49 @@
+{
+  "manifest_version": 3,
+  "name": "__MSG_extensionName__",
+  "version": "1.0.0",
+  "default_locale": "zh_CN",
+  "description": "__MSG_extensionDescription__",
+  "permissions": [
+    "bookmarks",
+    "activeTab",
+    "storage",
+    "scripting",
+    "offscreen",
+    "contextMenus"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup/popup.html"
+  },
+  "options_page": "options/options.html",
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_end"
+    }
+  ],
+  "commands": {
+    "trigger_smart_bookmark": {
+      "suggested_key": {
+        "default": "Alt+Shift+S",
+        "mac": "Alt+Shift+S"
+      },
+      "description": "一键触发智能书签分类"
+    }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["utils/locales.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
