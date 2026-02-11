@@ -1,16 +1,15 @@
 {
   "manifest_version": 3,
-  "name": "__MSG_extensionName__",
+  "name": "__MSG_appName__",
   "version": "1.0.0",
+  "description": "__MSG_appDesc__",
   "default_locale": "zh_CN",
-  "description": "__MSG_extensionDescription__",
   "permissions": [
     "bookmarks",
     "activeTab",
     "storage",
     "scripting",
-    "offscreen",
-    "contextMenus"
+    "offscreen"
   ],
   "host_permissions": [
     "<all_urls>"
@@ -37,13 +36,7 @@
         "default": "Alt+Shift+S",
         "mac": "Alt+Shift+S"
       },
-      "description": "__MSG_commandDescription__"
+      "description": "一键触发智能书签分类"
     }
-  },
-  "web_accessible_resources": [
-    {
-      "resources": ["utils/locales.js"],
-      "matches": ["<all_urls>"]
-    }
-  ]
+  }
 }

@@ -30,9 +30,6 @@ body {
   font-weight: 600;
   color: #202124;
   letter-spacing: 0.5px;
-  flex: 1; /* Take up available space */
-  text-align: center; /* Center the logo text */
-  margin-left: 32px; /* Offset the settings button width to make it truly centered (approx) */
 }
 
 .icon-btn {
@@ -121,6 +118,7 @@ body {
 
 /* Loading Ring */
 .loading-ring {
+  box-sizing: border-box;
   position: absolute;
   top: 0;
   left: 0;
@@ -157,7 +155,6 @@ body {
   background-color: #ffffff;
   display: flex;
   align-items: center;
-  justify-content: center; /* Center the header content */
   position: sticky;
   top: 0;
   z-index: 10;

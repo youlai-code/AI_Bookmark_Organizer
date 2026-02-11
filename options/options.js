@@ -1,56 +1,72 @@
-import { translations } from '../utils/locales.js';
-
 const OFFICIAL_PROXY = 'https://aibookmark.tenb68.workers.dev';
+import { initI18n, t } from '../utils/i18n.js';
 
-let currentLang = 'zh-CN'; // Default language
-
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  await initI18n();
   restoreOptions();
   setupTabs();
   setupAutoSave();
+  applyTranslations();
 });
 
-function updateLanguage(lang) {
-  currentLang = lang;
-  const t = translations[lang] || translations['zh-CN'];
-  
-  // Update the selector value if it's not already correct
-  const languageSelector = document.getElementById('languageSelector');
-  if (languageSelector && languageSelector.value !== lang) {
-    languageSelector.value = lang;
-  }
-
-  // 1. Update text content
+function applyTranslations() {
+  // 1. Translate regular text content
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
-    if (t[key]) {
-      el.textContent = t[key];
+    const message = t(key);
+    if (message) {
+      // If the element has children (like icons), we only want to replace the text node
+      // But a simpler way for this extension's structure is to check if it has a specific text span or just replace if no children
+      if (el.children.length === 0) {
+        el.textContent = message;
+      } else {
+        // Find the last text node and replace it, or just handle specifically for nav items
+        // For simplicity, if it's a nav-item or header with icon, we'll handle the text node
+        const textNode = Array.from(el.childNodes).find(node => node.nodeType === Node.TEXT_NODE && node.textContent.trim() !== '');
+        if (textNode) {
+          textNode.textContent = message;
+        } else {
+          // Fallback: if no text node found but we have children, we might need to append or handle differently
+          // In our HTML, most i18n are on spans or labels without complex mixed content
+          // For those with icons, the text is usually after the icon
+          el.childNodes.forEach(node => {
+            if (node.nodeType === Node.TEXT_NODE) {
+              const trimmed = node.textContent.trim();
+              if (trimmed && !trimmed.includes('{{') ) { // Basic check to avoid breaking things
+                 node.textContent = node.textContent.replace(trimmed, message);
+              }
+            }
+          });
+        }
+      }
     }
   });
 
-  // 2. Update placeholders
+  // 2. Translate placeholders
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
     const key = el.getAttribute('data-i18n-placeholder');
-    if (t[key]) {
-      el.placeholder = t[key];
+    const message = t(key);
+    if (message) {
+      el.placeholder = message;
     }
   });
 
-  // 3. Update specific dynamic elements if needed
-  updateUIState(); // Re-render hints in correct language
-  
-  // 4. Reload lists if they are visible
-  const activeTab = document.querySelector('.nav-item.active');
-  if (activeTab) {
-    const tabId = activeTab.dataset.tab;
-    if (tabId === 'history') loadHistory();
-    if (tabId === 'blocked') {
-        chrome.storage.sync.get({ disabledDomains: [] }, (items) => {
-            renderBlockedList(items.disabledDomains);
-        });
-    }
-    if (tabId === 'bookmarks') loadBookmarksTree();
+  // 3. Update page title
+  const titleKey = document.querySelector('.nav-item.active')?.dataset.tab;
+  if (titleKey) {
+    updatePageTitle(titleKey);
   }
+}
+
+function updatePageTitle(tabId) {
+  const pageTitle = document.getElementById('pageTitle');
+  const titleMap = {
+    'settings': t('navSettings'),
+    'blocked': t('navBlocked'),
+    'history': t('navHistory'),
+    'bookmarks': t('navBookmarks')
+  };
+  pageTitle.textContent = titleMap[tabId] || t('navSettings');
 }
 
 // document.getElementById('save').addEventListener('click', saveOptions); // Removed save button
@@ -59,7 +75,7 @@ document.getElementById('clearHistory').addEventListener('click', clearHistory);
 function setupAutoSave() {
     const inputs = [
         'llmProvider', 'apiKey', 'model', 'baseUrl', 'ollamaHost',
-        'allowNewFolders', 'enableSmartRename', 'showFloatingButton', 'languageSelector'
+        'allowNewFolders', 'enableSmartRename', 'showFloatingButton', 'language'
     ];
     
     const debouncedSave = debounce(autoSaveOptions, 800);
@@ -71,10 +87,13 @@ function setupAutoSave() {
         if (el.tagName === 'SELECT' || el.type === 'checkbox') {
             el.addEventListener('change', () => {
                 if (id === 'llmProvider') updateUIState();
-                if (id === 'languageSelector') {
-                    updateLanguage(el.value);
+                if (id === 'language') {
+                    // When language changes, save then re-apply translations
+                    autoSaveOptions();
+                    setTimeout(() => applyTranslations(), 100); 
+                } else {
+                    autoSaveOptions();
                 }
-                autoSaveOptions();
             });
         } else {
             el.addEventListener('input', () => {
@@ -114,17 +133,16 @@ function setupTabs() {
       });
       document.getElementById(tabId).classList.add('active');
 
-  // 3. Update Page Title
-  const t = translations[currentLang] || translations['zh-CN'];
-  const titleMap = {
-    'settings': t.pageTitle_settings || '设置',
-    'blocked': t.pageTitle_blocked || '屏蔽规则',
-    'history': t.pageTitle_history || '历史记录',
-    'bookmarks': t.pageTitle_bookmarks || '收藏夹树'
-  };
-  pageTitle.textContent = titleMap[tabId] || t.pageTitle_settings;
+      // 3. Update Page Title
+      const titleMap = {
+        'settings': '设置',
+        'blocked': '屏蔽规则',
+        'history': '历史记录',
+        'bookmarks': '收藏夹树'
+      };
+      pageTitle.textContent = titleMap[tabId] || '设置';
 
-  if (tabId === 'bookmarks') {
+      if (tabId === 'bookmarks') {
         loadBookmarksTree();
       }
     });
@@ -132,7 +150,6 @@ function setupTabs() {
 }
 
 function autoSaveOptions() {
-  const language = document.getElementById('languageSelector').value;
   const llmProvider = document.getElementById('llmProvider').value;
   const apiKey = document.getElementById('apiKey').value;
   const model = document.getElementById('model').value;
@@ -141,17 +158,20 @@ function autoSaveOptions() {
   const allowNewFolders = document.getElementById('allowNewFolders').checked;
   const enableSmartRename = document.getElementById('enableSmartRename').checked;
   const showFloatingButton = document.getElementById('showFloatingButton').checked;
+  const language = document.getElementById('language').value;
   
   // Show saving status
   const status = document.getElementById('saveStatus');
-  const t = translations[currentLang] || translations['zh-CN'];
-  status.textContent = t.status_saving || '正在保存...';
+  status.textContent = t('saveStatusSaving') || '正在保存...';
   status.style.color = '#5f6368';
 
   chrome.storage.sync.set(
-    { language, llmProvider, apiKey, model, baseUrl, ollamaHost, allowNewFolders, enableSmartRename, showFloatingButton },
+    { 
+      llmProvider, apiKey, model, baseUrl, ollamaHost, 
+      allowNewFolders, enableSmartRename, showFloatingButton, language 
+    },
     () => {
-      status.textContent = t.status_saved || '✅ 已自动保存';
+      status.textContent = '✅ ' + (t('saveStatusSaved') || '已自动保存');
       status.style.color = '#188038';
       setTimeout(() => {
         status.textContent = '';
@@ -163,7 +183,6 @@ function autoSaveOptions() {
 function restoreOptions() {
   chrome.storage.sync.get(
     { 
-        language: 'zh-CN',
         llmProvider: 'default', 
         apiKey: '', 
         model: '', 
@@ -172,27 +191,10 @@ function restoreOptions() {
         allowNewFolders: true, 
         enableSmartRename: false, 
         showFloatingButton: true,
+        language: 'zh_CN',
         disabledDomains: [] 
     },
     (items) => {
-      // Set language first
-      const lang = items.language || navigator.language || 'zh-CN';
-      // Normalize simple language codes (e.g. 'en-US' -> 'en' if we only have 'en')
-      // Our supported locales are keys in translations object
-      let supportedLang = lang;
-      if (!translations[lang]) {
-          // Try to match prefix, e.g. en-US -> en
-          const prefix = lang.split('-')[0];
-          if (translations[prefix]) {
-              supportedLang = prefix;
-          } else {
-              supportedLang = 'zh-CN'; // Fallback
-          }
-      }
-      
-      document.getElementById('languageSelector').value = supportedLang;
-      updateLanguage(supportedLang);
-
       document.getElementById('llmProvider').value = items.llmProvider;
       document.getElementById('apiKey').value = items.apiKey;
       document.getElementById('model').value = items.model;
@@ -201,6 +203,7 @@ function restoreOptions() {
       document.getElementById('allowNewFolders').checked = items.allowNewFolders;
       document.getElementById('enableSmartRename').checked = items.enableSmartRename;
       document.getElementById('showFloatingButton').checked = items.showFloatingButton;
+      document.getElementById('language').value = items.language;
       
       renderBlockedList(items.disabledDomains);
       updateUIState();
@@ -210,7 +213,6 @@ function restoreOptions() {
 }
 
 function updateUIState() {
-    const t = translations[currentLang] || translations['zh-CN'];
     const provider = document.getElementById('llmProvider').value;
     const baseUrl = document.getElementById('baseUrl').value;
     
@@ -241,20 +243,20 @@ function updateUIState() {
         apiKeyGroup.style.display = 'block';
         modelGroup.style.display = 'block';
         
-        hint.textContent = t.hint_model_deepseek || '默认为 deepseek-chat';
+        hint.textContent = t('modelHintDeepSeek') || '默认为 deepseek-chat';
         modelInput.placeholder = 'deepseek-chat';
     } else if (provider === 'chatgpt') {
         apiKeyGroup.style.display = 'block';
         modelGroup.style.display = 'block';
         baseUrlGroup.style.display = 'block'; // ChatGPT 也常需要代理
         
-        hint.textContent = t.hint_model_chatgpt || '默认为 gpt-4o-mini';
+        hint.textContent = t('modelHintChatGPT') || '默认为 gpt-4o-mini';
         modelInput.placeholder = 'gpt-4o-mini';
     } else if (provider === 'gemini') {
         apiKeyGroup.style.display = 'block';
         modelGroup.style.display = 'block';
         
-        hint.textContent = t.hint_model_gemini || '默认为 gemini-1.5-flash';
+        hint.textContent = t('modelHintGemini') || '默认为 gemini-1.5-flash';
         modelInput.placeholder = 'gemini-1.5-flash';
     } 
     // Legacy support logic (hidden in UI but logic kept)
@@ -264,12 +266,12 @@ function updateUIState() {
     } else if (provider === 'ollama') {
         ollamaHostGroup.style.display = 'block';
         modelGroup.style.display = 'block';
-        hint.textContent = t.hint_model_ollama || '默认为 llama3';
+        hint.textContent = t('modelHintOllama') || '默认为 llama3';
         modelInput.placeholder = 'llama3';
     } else if (provider === 'doubao') {
         apiKeyGroup.style.display = 'block';
         modelGroup.style.display = 'block';
-        hint.textContent = 'Endpoint ID (如 ep-2024...)';
+        hint.textContent = t('modelHintDoubao') || 'Endpoint ID (如 ep-2024...)';
         modelInput.placeholder = 'ep-2024xxxx';
     }
 }
@@ -277,13 +279,12 @@ function updateUIState() {
 async function checkChromeAIStatus() {
     const statusText = document.getElementById('aiStatusText');
     const guide = document.getElementById('chromeAiGuide');
-    const t = translations[currentLang] || translations['zh-CN'];
     
     // Reset guide visibility
     guide.style.display = 'none';
 
     if (!window.ai) {
-        statusText.textContent = t.status_chrome_ai_unsupported || '❌ 当前浏览器不支持 window.ai (请查看下方指南)';
+        statusText.textContent = '❌ 当前浏览器不支持 window.ai (请查看下方指南)';
         statusText.style.color = '#d93025';
         guide.style.display = 'block';
         return;
@@ -292,15 +293,15 @@ async function checkChromeAIStatus() {
     try {
         const capabilities = await window.ai.languageModel.capabilities();
         if (capabilities.available === 'no') {
-             statusText.textContent = t.status_chrome_ai_not_ready || '❌ 模型未就绪 (请检查 Flags 或等待下载)';
+             statusText.textContent = '❌ 模型未就绪 (请检查 Flags 或等待下载)';
              statusText.style.color = '#d93025';
              guide.style.display = 'block';
         } else {
-             statusText.textContent = t.status_chrome_ai_ready || '✅ Chrome 内置 AI 可用';
+             statusText.textContent = '✅ Chrome 内置 AI 可用';
              statusText.style.color = '#188038';
         }
     } catch (e) {
-        statusText.textContent = (t.status_chrome_ai_error || '⚠️ 检测失败: ') + e.message;
+        statusText.textContent = '⚠️ 检测失败: ' + e.message;
         statusText.style.color = '#f9ab00';
         guide.style.display = 'block';
     }
@@ -328,7 +329,7 @@ function renderHistoryList(history) {
     const li = document.createElement('li');
     li.className = 'history-item';
     
-    const date = new Date(item.timestamp).toLocaleString(currentLang);
+    const date = new Date(item.timestamp).toLocaleString();
     
     li.innerHTML = `
       <div class="history-header">
@@ -343,8 +344,7 @@ function renderHistoryList(history) {
 }
 
 function clearHistory() {
-  const t = translations[currentLang] || translations['zh-CN'];
-  if (confirm(t.confirm_clear_history || '确定要清空所有历史记录吗？')) {
+  if (confirm(t('confirmClearHistory') || '确定要清空所有历史记录吗？')) {
     chrome.storage.local.set({ history: [] }, () => {
       loadHistory();
     });
@@ -354,7 +354,6 @@ function clearHistory() {
 function renderBlockedList(domains) {
   const list = document.getElementById('blockedList');
   const emptyMsg = document.getElementById('emptyListMsg');
-  const t = translations[currentLang] || translations['zh-CN'];
   list.innerHTML = '';
   
   if (!domains || domains.length === 0) {
@@ -368,7 +367,7 @@ function renderBlockedList(domains) {
     const li = document.createElement('li');
     li.innerHTML = `
       <span>${domain}</span>
-      <button class="text-btn danger remove-btn" data-domain="${domain}">${t.btn_remove || '移除'}</button>
+      <button class="text-btn danger remove-btn" data-domain="${domain}">${t('remove') || '移除'}</button>
     `;
     list.appendChild(li);
   });
@@ -412,7 +411,6 @@ function loadBookmarksTree() {
 }
 
 function traverseBookmarksCLI(nodes, prefix, container) {
-    const t = translations[currentLang] || translations['zh-CN'];
     nodes.forEach((node, index) => {
         const isLast = index === nodes.length - 1;
         // Construct the tree connector strings
@@ -446,7 +444,7 @@ function traverseBookmarksCLI(nodes, prefix, container) {
         
         if (isFolder) {
             contentSpan.className = 'cli-folder';
-            contentSpan.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align: text-bottom;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>${node.title || (t.untitled_folder || 'Untitled Folder')}/`; 
+            contentSpan.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align: text-bottom;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>${node.title || t('untitledFolder') || 'Untitled Folder'}/`; 
         } else {
             const link = document.createElement('a');
             link.className = 'cli-link';
@@ -488,15 +486,16 @@ function showContextMenu(e, nodeData) {
 ctxDelete.addEventListener('click', () => {
     if (!contextMenuTargetNode) return;
     const { id, title, isFolder } = contextMenuTargetNode;
-    const t = translations[currentLang] || translations['zh-CN'];
     
-    const typeName = isFolder === 'true' ? (t.type_folder || '文件夹') : (t.type_bookmark || '书签');
-    const msg = (t.confirm_delete || '确定要删除{type} "{title}" 吗？{suffix}')
-        .replace('{type}', typeName)
-        .replace('{title}', title)
-        .replace('{suffix}', isFolder === 'true' ? ('\n' + (t.confirm_delete_suffix || '(其内所有内容也将被删除)')) : '');
+    const typeFolder = t('typeFolder') || '文件夹';
+    const typeBookmark = t('typeBookmark') || '书签';
+    const typeName = isFolder === 'true' ? typeFolder : typeBookmark;
+    
+    const confirmMsg = isFolder === 'true' 
+        ? (t('confirmDeleteFolder', { title }) || `确定要删除文件夹 "${title}" 吗？\n(其内所有内容也将被删除)`)
+        : (t('confirmDeleteBookmark', { title }) || `确定要删除书签 "${title}" 吗？`);
 
-    if (confirm(msg)) {
+    if (confirm(confirmMsg)) {
         if (isFolder === 'true') {
             chrome.bookmarks.removeTree(id, () => loadBookmarksTree());
         } else {

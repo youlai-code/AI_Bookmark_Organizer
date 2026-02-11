@@ -1,27 +1,18 @@
-import { translations } from './locales.js';
-
 const OFFICIAL_PROXY = 'https://aibookmark.tenb68.workers.dev';
 
 export async function classifyWithLLM(title, url, content, existingFolders = [], allowNewFolders = true, enableRename = false) {
   const config = await chrome.storage.sync.get(['llmProvider', 'apiKey', 'model', 'ollamaHost', 'baseUrl', 'language']);
+  const lang = config.language || 'zh_CN';
   
-  // Determine language
-  let lang = config.language || 'zh-CN';
-  if (!translations[lang]) {
-      const prefix = lang.split('-')[0];
-      lang = translations[prefix] ? prefix : 'zh-CN';
-  }
-  const t = translations[lang] || translations['zh-CN'];
-  const defaultFolder = t.folder_default || 'Default Bookmark';
-
-  const foldersStr = existingFolders.length > 0 ? existingFolders.join(', ') : 'None';
+  const foldersStr = existingFolders.length > 0 ? existingFolders.join('、') : (lang === 'en' ? 'None' : '无');
   
-  let prompt = `Analyze the following web page information and return a suitable bookmark folder name.
+  let prompt = '';
 
-Target Language: ${lang} (${t.prompt_lang_instruction || 'Respond in this language'})
+  if (lang === 'en') {
+    prompt = `Please analyze the following web page information and return a suitable bookmark folder name according to the rules.
 
-Existing Folders: ${foldersStr}
-Allow New Folders: ${allowNewFolders ? 'Yes' : 'No'}
+Existing folders: ${foldersStr}
+Allow new folders: ${allowNewFolders ? 'Yes' : 'No'}
 
 Page Info:
 Title: ${title}
@@ -30,24 +21,55 @@ Description: ${content.description || ''}
 Keywords: ${content.keywords || ''}
 
 Rules:
-1. Prioritize selecting the best match from "Existing Folders".
-2. If no match in existing folders:
-   - If "Allow New Folders" is Yes: Create a new, short (2-4 words) category name in the Target Language.
-   - If "Allow New Folders" is No: Forcefully select the closest match from the list. If absolutely no relation, return "${defaultFolder}".`;
+1. Prioritize choosing the best match from the "Existing folders" list.
+2. If no existing folder matches:
+   - If allowed to create new folders: Please return a new, short (1-3 words) English category name (e.g., Tech Docs, News).
+   - If not allowed: Forcefully choose the closest one from the existing list; if absolutely no match, return "Default".`;
 
-  if (enableRename) {
-    prompt += `
-3. Also generate a simplified title for the bookmark (remove irrelevant suffixes, keep core content).
-4. You MUST return JSON format as follows:
-{"category": "Folder Name", "title": "Simplified Title"}
-Do not include markdown code block markers, just the raw JSON string.`;
+    if (enableRename) {
+      prompt += `
+3. Also generate a simplified page title (remove irrelevant suffixes, keep core content).
+4. Must return JSON format:
+{"category": "Category Name", "title": "Simplified Title"}
+Do not include markdown blocks, just raw JSON string.`;
+    } else {
+      prompt += `
+3. Return only the folder name, no explanations or other text.`;
+    }
+
   } else {
-    prompt += `
-3. Return ONLY the folder name. Do not include any explanation or other text.`;
+    // Default to zh_CN
+    prompt = `请分析以下网页信息，并根据规则返回一个合适的书签分类文件夹名称。
+
+现有文件夹列表：${foldersStr}
+允许创建新文件夹：${allowNewFolders ? '是' : '否'}
+
+网页信息：
+标题: ${title}
+URL: ${url}
+内容摘要: ${content.description || ''}
+关键词: ${content.keywords || ''}
+
+规则：
+1. 优先从“现有文件夹列表”中选择最匹配的名称。
+2. 如果现有文件夹都不匹配：
+   - 如果允许创建新文件夹：请返回一个新的、简短的（2-4字）中文分类名称（如：技术文档、新闻资讯）。
+   - 如果不允许创建新文件夹：请强制从现有列表中选一个最接近的；如果实在无法关联，返回“默认收藏”。`;
+
+    if (enableRename) {
+      prompt += `
+3. 请同时生成一个简化的网页标题（去除无关后缀，保留核心内容）。
+4. 请务必返回 JSON 格式，格式如下：
+{"category": "分类名称", "title": "简化后的标题"}
+不要包含 markdown 代码块标记，只返回纯 JSON 字符串。`;
+    } else {
+      prompt += `
+3. 只返回文件夹名称，不要包含任何解释或其他文字。`;
+    }
   }
 
   console.log('=== LLM Request Prompt ===\n', prompt);
-
+  
   let resultText;
   
   try {
@@ -84,7 +106,7 @@ Do not include markdown code block markers, just the raw JSON string.`;
   console.log('=== LLM Response ===\n', resultText);
 
   // 解析结果
-  let category = defaultFolder;
+  let category = '默认收藏';
   let newTitle = title;
 
   try {

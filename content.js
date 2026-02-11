@@ -1,33 +1,49 @@
-// 创建悬浮按钮 (小巧、右下角、可拖动、右键屏蔽)
-let translations = {};
-let currentLang = 'zh-CN';
-
-// Load translations dynamically
-async function loadTranslations() {
-  try {
-    const module = await import(chrome.runtime.getURL('utils/locales.js'));
-    translations = module.translations;
-    
-    // Get current language
-    const { language } = await chrome.storage.sync.get({ language: 'zh-CN' });
-    currentLang = language || 'zh-CN';
-    
-    // Fallback logic
-    if (!translations[currentLang]) {
-        const prefix = currentLang.split('-')[0];
-        currentLang = translations[prefix] ? prefix : 'zh-CN';
+// I18n Helper for Content Script
+const I18n = {
+    lang: 'zh_CN',
+    messages: null,
+    async init() {
+        const data = await chrome.storage.sync.get('language');
+        this.lang = data.language || 'zh_CN';
+        await this.loadMessages();
+        chrome.storage.onChanged.addListener((changes) => {
+            if (changes.language) {
+                this.lang = changes.language.newValue;
+                this.loadMessages().then(() => this.updateUI());
+            }
+        });
+    },
+    async loadMessages() {
+        try {
+            const url = chrome.runtime.getURL(`_locales/${this.lang}/messages.json`);
+            const res = await fetch(url);
+            this.messages = await res.json();
+        } catch (e) {
+            // fallback
+            if (this.lang !== 'zh_CN') {
+                 try {
+                    const url = chrome.runtime.getURL(`_locales/zh_CN/messages.json`);
+                    const res = await fetch(url);
+                    this.messages = await res.json();
+                 } catch(e2) {}
+            }
+        }
+    },
+    t(key, replacements) {
+        if (!this.messages || !this.messages[key]) return key;
+        let msg = this.messages[key].message;
+        if (replacements) {
+             msg = msg.replace(/\$([a-zA-Z0-9_]+)\$/g, (m, k) => replacements[k.toLowerCase()] || m);
+        }
+        return msg;
+    },
+    updateUI() {
+        const btn = document.getElementById('aibook-floating-btn');
+        if (btn) btn.title = this.t('floatingBtnTitle');
     }
-  } catch (e) {
-    console.error('Failed to load translations:', e);
-    // Fallback to empty object, logic will use defaults or Chinese if hardcoded fallback
-  }
-}
+};
 
-function getMsg(key, defaultText) {
-  const t = translations[currentLang] || translations['zh-CN'] || {};
-  return t[key] || defaultText;
-}
-
+// 创建悬浮按钮 (小巧、右下角、可拖动、右键屏蔽)
 async function createFloatingButton() {
   if (document.getElementById('aibook-floating-btn')) return;
 
@@ -44,12 +60,11 @@ async function createFloatingButton() {
 
   const btn = document.createElement('div');
   btn.id = 'aibook-floating-btn';
-  // Use localized title
-  btn.title = getMsg('floating_btn_title', 'AI Bookmark (Click save, Drag move, Right-click hide)');
+  btn.title = I18n.t('floatingBtnTitle');
   
   // 极简风格的星星图标
   btn.innerHTML = `
-    <svg viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet">
+    <svg viewBox="0 0 24 24">
       <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
     </svg>
   `;
@@ -150,9 +165,8 @@ function makeDraggable(element) {
 function handleContextMenu(e) {
     e.preventDefault();
     
-    const msg = getMsg('confirm_hide_floating', '🚫 Hide button on this site?\n\nRestore in Settings.');
     // 使用原生 confirm 确保 UI 绝对可用
-    if (confirm(msg)) {
+    if (confirm(I18n.t('confirmHideFloatingBtn'))) {
         disableOnCurrentDomain();
     }
 }
@@ -164,7 +178,7 @@ async function disableOnCurrentDomain() {
     if (!disabledDomains.includes(hostname)) {
         disabledDomains.push(hostname);
         await chrome.storage.sync.set({ disabledDomains });
-        showToast(getMsg('toast_hidden', 'Hidden. Restore in Settings.'), 'info');
+        showToast(I18n.t('hideSuccess'), 'info');
         const btn = document.getElementById('aibook-floating-btn');
         if (btn) btn.remove();
     }
@@ -262,25 +276,23 @@ async function handleBookmark() {
         });
     } catch (e) {
         if (e.message.includes('Extension context invalidated')) {
-            throw new Error(getMsg('error_extension_invalidated', 'Extension context invalidated, please refresh the page.'));
+            throw new Error('插件已更新，请刷新页面后重试');
         }
         throw e;
     }
     
     if (response && response.success) {
-      const msg = getMsg('toast_success', 'Saved to: {category}').replace('{category}', response.category);
-      showToast(msg, 'success');
+      showToast(I18n.t('bookmarkedSuccess', { category: response.category }), 'success');
       // 成功后可以让星星短暂变色，然后恢复
       svg.style.fill = '#188038';
       setTimeout(() => { svg.style.fill = ''; }, 2000);
     } else {
-      const msg = getMsg('toast_fail', 'Failed: {error}').replace('{error}', response.error || getMsg('error_unknown', 'Unknown error'));
-      throw new Error(msg);
+      throw new Error(response.error || '未知错误');
     }
     
   } catch (error) {
     console.error('AI Bookmark Error:', error);
-    showToast(error.message, 'error');
+    showToast(I18n.t('failedPrefix') + error.message, 'error');
   } finally {
     // 恢复状态
     btn.dataset.loading = 'false';
@@ -298,15 +310,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 // Listen for setting changes
 chrome.storage.onChanged.addListener((changes, area) => {
     if (area === 'sync') {
-        if (changes.language) {
-             currentLang = changes.language.newValue;
-             // Update button title if it exists
-             const btn = document.getElementById('aibook-floating-btn');
-             if (btn) {
-                 btn.title = getMsg('floating_btn_title', 'AI Bookmark (Click save, Drag move, Right-click hide)');
-             }
-        }
-        
         if (changes.showFloatingButton) {
             if (changes.showFloatingButton.newValue) {
                 createFloatingButton();
@@ -332,9 +335,8 @@ chrome.storage.onChanged.addListener((changes, area) => {
 
 // 初始化
 if (window.self === window.top) { // 只在顶层窗口显示
-    (async () => {
-        await loadTranslations();
+    I18n.init().then(() => {
         createFloatingButton();
         createToast();
-    })();
+    });
 }

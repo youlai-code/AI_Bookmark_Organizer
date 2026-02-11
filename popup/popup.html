@@ -8,8 +8,8 @@
   <div class="container">
     <!-- Top Header -->
     <header class="top-bar">
-      <div class="logo" data-i18n="extensionName">AIBook</div>
-      <button id="openOptions" class="icon-btn" data-i18n-title="nav_settings" title="设置">
+      <div class="logo">AIBook</div>
+      <button id="openOptions" class="icon-btn" data-i18n-title="navSettings">
         <!-- Hollow Gear Icon -->
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="3"></circle>
@@ -21,23 +21,14 @@
     <!-- Main Content (Star Button) -->
     <main class="main-content">
       <div class="btn-wrapper">
-        <button id="smartBookmarkBtn" class="star-btn" data-i18n-title="smartBookmarkBtn" title="智能分类收藏">
-          <!-- Keeping original filled star for button as requested, or maybe a hollow one? 
-               User said "except star button UI styles" (implies keeping it), 
-               but "icon hollow as plugin use". 
-               I'll use a filled star for the main action because it's the "Activate" state usually, 
-               but I'll make it look sharp. 
-               Let's stick to the existing star SVG but clean it up if needed.
-               Wait, user said "replace UI style EXCEPT star button". So I should keep the star button EXACTLY as is if possible, 
-               or just integrate it into the new theme.
-          -->
+        <button id="smartBookmarkBtn" class="star-btn" data-i18n-title="popupSmartBookmark">
           <svg viewBox="0 0 24 24">
             <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
           </svg>
         </button>
         <div id="loadingRing" class="loading-ring"></div>
       </div>
-      <div id="actionStatus" class="status-text" data-i18n="actionStatus_idle">智能收藏</div>
+      <div id="actionStatus" class="status-text" data-i18n="popupSmartBookmark">智能收藏</div>
     </main>
 
     <!-- History Section -->
@@ -47,12 +38,12 @@
           <circle cx="12" cy="12" r="10"></circle>
           <polyline points="12 6 12 12 16 14"></polyline>
         </svg>
-        <span data-i18n="card_recent_history">最近记录</span>
+        <span data-i18n="popupRecentHistory">最近记录</span>
       </div>
       <ul id="historyList" class="history-list">
         <!-- JS Populated -->
       </ul>
-      <div id="emptyHistory" class="empty-msg" data-i18n="emptyHistory">暂无记录</div>
+      <div id="emptyHistory" class="empty-msg" data-i18n="popupNoHistory">暂无记录</div>
     </div>
   </div>
   

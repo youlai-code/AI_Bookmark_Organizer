@@ -1,18 +1,10 @@
 import { classifyWithLLM } from './utils/llm.js';
 import { createOrGetFolder, moveBookmark, getExistingFolderNames } from './utils/bookmark.js';
 import { addHistoryItem } from './utils/history.js';
-import { translations } from './utils/locales.js';
+import { initI18n, t } from './utils/i18n.js';
 
-// Helper to get current language translations
-async function getTranslations() {
-    const { language } = await chrome.storage.sync.get({ language: 'zh-CN' });
-    let lang = language;
-    if (!translations[lang]) {
-        const prefix = lang.split('-')[0];
-        lang = translations[prefix] ? prefix : 'zh-CN';
-    }
-    return translations[lang] || translations['zh-CN'];
-}
+// Initialize i18n
+await initI18n();
 
 // 记录最近由插件自动创建的书签URL，避免onCreated重复处理
 const recentlyProcessedUrls = new Set();
@@ -39,7 +31,6 @@ chrome.bookmarks.onCreated.addListener(async (id, bookmark) => {
 // 监听键盘快捷键
 chrome.commands.onCommand.addListener(async (command) => {
   if (command === 'trigger_smart_bookmark') {
-    const t = await getTranslations();
     try {
       const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
       const tab = tabs[0];
@@ -49,7 +40,7 @@ chrome.commands.onCommand.addListener(async (command) => {
         // 发送“开始处理”的提示（可选，先给用户一个反馈）
         chrome.tabs.sendMessage(tab.id, {
             type: 'SHOW_TOAST',
-            message: t.toast_analyzing,
+            message: t('toastAnalyzing'),
             status: 'info'
         }).catch(() => {});
 
@@ -83,7 +74,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 // 处理 Popup 手动触发
 async function handleManualTrigger(tabId, url, title) {
-    const t = await getTranslations();
     try {
         console.log('收到手动收藏请求:', title);
         
@@ -114,7 +104,7 @@ async function handleManualTrigger(tabId, url, title) {
             
         } catch (error) {
             console.warn('LLM分类失败，使用默认分类:', error);
-            category = t.folder_default || 'Default Bookmark';
+            category = t('defaultFolder');
         }
         
         // 3. 执行收藏逻辑
@@ -142,7 +132,7 @@ async function handleManualTrigger(tabId, url, title) {
         if (tabId) {
             chrome.tabs.sendMessage(tabId, {
                 type: 'SHOW_TOAST',
-                message: t.toast_success.replace('{category}', category),
+                message: t('bookmarkedSuccess', { category }),
                 status: 'success'
             }).catch(() => {}); // 忽略错误（如果页面未加载完成）
         }
@@ -158,7 +148,7 @@ async function handleManualTrigger(tabId, url, title) {
         if (tabId) {
              chrome.tabs.sendMessage(tabId, {
                 type: 'SHOW_TOAST',
-                message: t.toast_fail.replace('{error}', error.message),
+                message: t('failedPrefix') + error.message,
                 status: 'error'
             }).catch(() => {});
         }
@@ -175,7 +165,6 @@ async function handleAiBookmarkRequest(data, tabId) {
 
 // 通用分类逻辑 (用于原生监听)
 async function processBookmarkClassification(bookmarkId, title, url, pageContent) {
-    const t = await getTranslations();
     let category;
     let newTitle = title;
 
@@ -191,7 +180,7 @@ async function processBookmarkClassification(bookmarkId, title, url, pageContent
         newTitle = result.title;
     } catch (error) {
         console.warn('LLM分类失败，使用默认分类:', error);
-        category = t.folder_default || 'Default Bookmark';
+        category = t('defaultFolder');
     }
     console.log(`分类结果: ${category}, 新标题: ${newTitle}`);
     
@@ -213,7 +202,7 @@ async function processBookmarkClassification(bookmarkId, title, url, pageContent
             if (tabs[0] && tabs[0].url === url) {
                  chrome.tabs.sendMessage(tabs[0].id, {
                     type: 'SHOW_TOAST',
-                    message: t.toast_auto_success.replace('{category}', category),
+                    message: t('toastAutoBookmarked', { category }),
                     status: 'success'
                 });
             }
@@ -263,34 +252,3 @@ async function findBookmarkByUrl(url) {
     const results = await chrome.bookmarks.search({ url });
     return results.length > 0 ? results[0] : null;
 }
-
-// Context Menu Management
-async function updateContextMenu() {
-    const t = await getTranslations();
-    chrome.contextMenus.removeAll(() => {
-        chrome.contextMenus.create({
-            id: 'save_to_aibook',
-            title: t.context_menu_title || 'Save to AIBook AI',
-            contexts: ['page']
-        });
-    });
-}
-
-chrome.runtime.onInstalled.addListener(() => {
-    updateContextMenu();
-});
-
-chrome.contextMenus.onClicked.addListener((info, tab) => {
-    if (info.menuItemId === 'save_to_aibook') {
-        if (tab && tab.id) {
-            handleManualTrigger(tab.id, tab.url, tab.title);
-        }
-    }
-});
-
-// Listen for language changes to update context menu
-chrome.storage.onChanged.addListener((changes, area) => {
-    if (area === 'sync' && changes.language) {
-        updateContextMenu();
-    }
-});
