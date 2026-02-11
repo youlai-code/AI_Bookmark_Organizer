@@ -98,6 +98,7 @@
   "status_chrome_ai_not_ready": { "message": "模型未就绪" },
   "status_chrome_ai_ready": { "message": "Chrome AI 就绪" },
   "status_chrome_ai_error": { "message": "错误: " },
+  "commandDescription": { "message": "一键触发智能书签分类" },
   "folder_default": { "message": "默认收藏" },
   "toast_auto_success": { 
     "message": "自动归类到: $CATEGORY$", 

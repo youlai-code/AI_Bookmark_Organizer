@@ -1,33 +1,37 @@
 /* 悬浮收藏按钮 (右下角小浮标) */
 #aibook-floating-btn {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 32px;
-  height: 32px;
-  background-color: rgba(255, 255, 255, 0.9);
-  border: 1px solid #e0e0e0;
-  border-radius: 50%;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  z-index: 2147483647; /* 确保在最顶层 */
-  cursor: grab; /* 拖动光标 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease; /* 移除 transform 动画，避免干扰拖动 */
-  opacity: 0.6; /* 默认半透明，不干扰阅读 */
-  user-select: none;
+  position: fixed !important;
+  bottom: 24px !important;
+  right: 24px !important;
+  width: 44px !important;
+  height: 44px !important;
+  background-color: #ffffff !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 50% !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  z-index: 2147483647 !important;
+  cursor: grab !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s ease !important;
+  opacity: 0.9 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
 }
 
 #aibook-floating-btn:active {
-  cursor: grabbing;
+  cursor: grabbing !important;
+  transform: scale(0.95) !important;
 }
 
 #aibook-floating-btn:hover {
-  /* transform: scale(1.1); 移除缩放，防止拖动时抖动 */
-  opacity: 1;
-  background-color: #fff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  opacity: 1 !important;
+  background-color: #f8f9fa !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2) !important;
+  border-color: #1a73e8 !important;
 }
 
 /* 自定义右键菜单 */
@@ -57,15 +61,21 @@
 }
 
 
+/* 强制重置 SVG 样式，防止被页面样式污染 */
 #aibook-floating-btn svg {
-  width: 16px;
-  height: 16px;
-  fill: #5f6368; /* 灰色图标，低调 */
-  transition: fill 0.2s;
+  width: 24px !important;
+  height: 24px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: block !important;
+  fill: #5f6368 !important;
+  transition: fill 0.2s ease !important;
+  pointer-events: none !important;
+  flex-shrink: 0 !important;
 }
 
 #aibook-floating-btn:hover svg {
-  fill: #1a73e8; /* 悬停变蓝 */
+  fill: #1a73e8 !important;
 }
 
 /* 加载动画 */

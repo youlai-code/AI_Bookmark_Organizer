@@ -37,7 +37,7 @@
         "default": "Alt+Shift+S",
         "mac": "Alt+Shift+S"
       },
-      "description": "一键触发智能书签分类"
+      "description": "__MSG_commandDescription__"
     }
   },
   "web_accessible_resources": [

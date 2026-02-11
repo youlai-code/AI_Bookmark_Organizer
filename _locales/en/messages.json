@@ -98,6 +98,7 @@
   "status_chrome_ai_not_ready": { "message": "Model not ready" },
   "status_chrome_ai_ready": { "message": "Chrome AI Ready" },
   "status_chrome_ai_error": { "message": "Error: " },
+  "commandDescription": { "message": "One-click smart bookmark classification" },
   "folder_default": { "message": "Default Bookmark" },
   "toast_auto_success": { 
     "message": "Auto classified to: $CATEGORY$", 

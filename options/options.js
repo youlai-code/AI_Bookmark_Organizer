@@ -14,6 +14,12 @@ function updateLanguage(lang) {
   currentLang = lang;
   const t = translations[lang] || translations['zh-CN'];
   
+  // Update the selector value if it's not already correct
+  const languageSelector = document.getElementById('languageSelector');
+  if (languageSelector && languageSelector.value !== lang) {
+    languageSelector.value = lang;
+  }
+
   // 1. Update text content
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
@@ -108,17 +114,17 @@ function setupTabs() {
       });
       document.getElementById(tabId).classList.add('active');
 
-      // 3. Update Page Title
-      const t = translations[currentLang] || translations['zh-CN'];
-      const titleMap = {
-        'settings': t.pageTitle_settings || '设置',
-        'blocked': t.pageTitle_blocked || '屏蔽规则',
-        'history': t.pageTitle_history || '历史记录',
-        'bookmarks': t.pageTitle_bookmarks || '收藏夹树'
-      };
-      pageTitle.textContent = titleMap[tabId] || t.pageTitle_settings;
+  // 3. Update Page Title
+  const t = translations[currentLang] || translations['zh-CN'];
+  const titleMap = {
+    'settings': t.pageTitle_settings || '设置',
+    'blocked': t.pageTitle_blocked || '屏蔽规则',
+    'history': t.pageTitle_history || '历史记录',
+    'bookmarks': t.pageTitle_bookmarks || '收藏夹树'
+  };
+  pageTitle.textContent = titleMap[tabId] || t.pageTitle_settings;
 
-      if (tabId === 'bookmarks') {
+  if (tabId === 'bookmarks') {
         loadBookmarksTree();
       }
     });
