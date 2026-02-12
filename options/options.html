@@ -90,27 +90,6 @@
                   <div class="sub-hint" data-i18n="defaultModelHint">使用插件提供的免费加速通道，无需配置 API Key。</div>
               </div>
 
-              <!-- Chrome AI Status (Hidden but kept in code if needed later) -->
-              <div id="chromeAiStatus" class="form-group status-box" style="display:none; background: #e8f0fe; padding: 12px; border-radius: 4px; margin-bottom: 20px;">
-                  <div id="aiStatusText" style="font-weight: 500; color: #1a73e8;">正在检查浏览器兼容性...</div>
-                  <div class="sub-hint">Chrome 内置 AI 需要最新版 Chrome (Canary/Dev) 并开启相关 Flags。无需 API Key，完全免费且隐私安全。</div>
-                  
-                  <!-- Detailed Guide -->
-                  <div id="chromeAiGuide" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #dcdcdc; font-size: 0.9em; display: none; color: #333;">
-                      <p><strong><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> 如何开启 Chrome 内置 AI:</strong></p>
-                      <ol style="padding-left: 20px; margin: 8px 0; line-height: 1.6;">
-                          <li>请下载并安装 <strong><a href="https://www.google.com/chrome/canary/" target="_blank">Chrome Canary</a></strong> 或 <strong>Dev</strong> 版本（标准版暂不支持）。</li>
-                          <li>在地址栏输入 <code>chrome://flags</code> 并回车。</li>
-                          <li>搜索 <code>Optimization Guide On Device Model</code> 并设为 <strong>Enabled BypassPerfRequirement</strong>。</li>
-                          <li>搜索 <code>Prompt API for Gemini Nano</code> 并设为 <strong>Enabled</strong>。</li>
-                          <li>重启浏览器，等待组件下载（可能需要几分钟）。</li>
-                      </ol>
-                      <p style="margin-top: 8px; color: #666; background: #fff3cd; padding: 8px; border-radius: 4px;">
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg> <strong>太麻烦？</strong> 推荐使用 <strong>DeepSeek</strong>，注册即送免费额度，无需配置复杂环境，稳定好用。
-                      </p>
-                  </div>
-              </div>
-              
               <div class="form-group" id="apiKeyGroup">
                 <label data-i18n="apiKey">API Key:</label>
                 <input type="password" id="apiKey" data-i18n-placeholder="apiKeyPlaceholder" placeholder="输入API密钥">

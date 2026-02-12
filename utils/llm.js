@@ -169,9 +169,6 @@ export async function classifyWithLLM(title, url, content, existingFolders = [],
       case 'gemini':
         resultText = await callGemini(prompt, config.apiKey, config.model);
         break;
-      case 'chrome_builtin':
-        resultText = await callChromeBuiltInAI(prompt);
-        break;
       case 'ollama':
         resultText = await callOllama(prompt, config.model, config.ollamaHost);
         break;
@@ -268,32 +265,6 @@ async function callOllama(prompt, model, host) {
   return data.response;
 }
 
-// === Chrome Built-in AI ===
-
-async function callChromeBuiltInAI(prompt) {
-  try {
-    await setupOffscreenDocument();
-    
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Chrome AI timed out')), 60000)
-    );
-    
-    const requestPromise = chrome.runtime.sendMessage({
-      type: 'PROMPT_AI',
-      target: 'offscreen',
-      prompt: prompt
-    });
-    
-    const response = await Promise.race([requestPromise, timeoutPromise]);
-    if (response?.error) throw new Error(response.error);
-    if (response?.result) return response.result;
-    throw new Error('Unknown Chrome AI error');
-  } catch (e) {
-    if (e.message.includes('timed out')) throw e;
-    throw new Error('Chrome AI failed: ' + e.message);
-  }
-}
-
 // === Helpers ===
 
 function resolveEndpoint(base, suffix) {
@@ -311,27 +282,4 @@ async function postJson(url, headers, body) {
     body: JSON.stringify(body)
   });
   return await response.json();
-}
-
-// Offscreen Management
-let creatingOffscreen;
-const OFFSCREEN_PATH = 'offscreen/offscreen.html';
-
-async function setupOffscreenDocument() {
-  const contexts = await chrome.runtime.getContexts({
-    contextTypes: ['OFFSCREEN_DOCUMENT'],
-    documentUrls: [chrome.runtime.getURL(OFFSCREEN_PATH)]
-  });
-  if (contexts.length > 0) return;
-
-  if (creatingOffscreen) await creatingOffscreen;
-  else {
-    creatingOffscreen = chrome.offscreen.createDocument({
-      url: OFFSCREEN_PATH,
-      reasons: ['DOM_PARSER'],
-      justification: 'AI Prompt'
-    });
-    await creatingOffscreen;
-    creatingOffscreen = null;
-  }
 }

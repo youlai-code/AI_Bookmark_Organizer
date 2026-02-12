@@ -281,7 +281,6 @@ function updateUIState() {
     const modelGroup = document.getElementById('modelGroup');
     const baseUrlGroup = document.getElementById('baseUrlGroup');
     const ollamaHostGroup = document.getElementById('ollamaHostGroup');
-    const chromeAiStatus = document.getElementById('chromeAiStatus');
     const proxyStatus = document.getElementById('proxyStatus');
     const defaultModelStatus = document.getElementById('defaultModelStatus');
     
@@ -293,7 +292,6 @@ function updateUIState() {
     modelGroup.style.display = 'none';
     baseUrlGroup.style.display = 'none';
     ollamaHostGroup.style.display = 'none';
-    chromeAiStatus.style.display = 'none';
     if(proxyStatus) proxyStatus.style.display = 'none';
     if(defaultModelStatus) defaultModelStatus.style.display = 'none';
 
@@ -319,11 +317,7 @@ function updateUIState() {
         hint.textContent = t('modelHintGemini') || '默认为 gemini-1.5-flash';
         modelInput.placeholder = 'gemini-1.5-flash';
     } 
-    // Legacy support logic (hidden in UI but logic kept)
-    else if (provider === 'chrome_builtin') {
-        chromeAiStatus.style.display = 'block';
-        checkChromeAIStatus();
-    } else if (provider === 'ollama') {
+    else if (provider === 'ollama') {
         ollamaHostGroup.style.display = 'block';
         modelGroup.style.display = 'block';
         hint.textContent = t('modelHintOllama') || '默认为 llama3';
@@ -333,37 +327,6 @@ function updateUIState() {
         modelGroup.style.display = 'block';
         hint.textContent = t('modelHintDoubao') || 'Endpoint ID (如 ep-2024...)';
         modelInput.placeholder = 'ep-2024xxxx';
-    }
-}
-
-async function checkChromeAIStatus() {
-    const statusText = document.getElementById('aiStatusText');
-    const guide = document.getElementById('chromeAiGuide');
-    
-    // Reset guide visibility
-    guide.style.display = 'none';
-
-    if (!window.ai) {
-        statusText.textContent = '❌ 当前浏览器不支持 window.ai (请查看下方指南)';
-        statusText.style.color = '#d93025';
-        guide.style.display = 'block';
-        return;
-    }
-    
-    try {
-        const capabilities = await window.ai.languageModel.capabilities();
-        if (capabilities.available === 'no') {
-             statusText.textContent = '❌ 模型未就绪 (请检查 Flags 或等待下载)';
-             statusText.style.color = '#d93025';
-             guide.style.display = 'block';
-        } else {
-             statusText.textContent = '✅ Chrome 内置 AI 可用';
-             statusText.style.color = '#188038';
-        }
-    } catch (e) {
-        statusText.textContent = '⚠️ 检测失败: ' + e.message;
-        statusText.style.color = '#f9ab00';
-        guide.style.display = 'block';
     }
 }
 

@@ -33,7 +33,6 @@ $includePaths = @(
   '_locales',
   'icons',
   'manager',
-  'offscreen',
   'options',
   'popup',
   'utils'

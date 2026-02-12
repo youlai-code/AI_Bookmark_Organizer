@@ -8,8 +8,7 @@
     "bookmarks",
     "activeTab",
     "storage",
-    "scripting",
-    "offscreen"
+    "scripting"
   ],
   "host_permissions": [
     "<all_urls>"

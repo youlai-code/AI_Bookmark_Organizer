@@ -69,7 +69,6 @@ AI Bookmark Organizer (repo root)/
 │   └── popup.js
 ├── options/            # 设置页
 ├── manager/            # 收藏夹树（预览与管理）
-├── offscreen/          # Offscreen 文档（内容提取等）
 └── utils/              # 工具函数（i18n、LLM、书签/历史等）
 ```
 
