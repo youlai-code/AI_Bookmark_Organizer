@@ -30,6 +30,14 @@ body {
   font-weight: 600;
   color: #202124;
   letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo .app-icon {
+  width: 18px;
+  height: 18px;
 }
 
 .actions {

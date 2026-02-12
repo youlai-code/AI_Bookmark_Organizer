@@ -33,6 +33,14 @@ body {
   color: #202124;
   font-weight: 600;
   letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-area .app-icon {
+  width: 20px;
+  height: 20px;
 }
 
 .nav-menu {

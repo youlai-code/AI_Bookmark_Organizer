@@ -51,7 +51,16 @@ function applyTranslations() {
     }
   });
 
-  // 3. Update page title
+  // 3. Translate titles (tooltips)
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    const key = el.getAttribute('data-i18n-title');
+    const message = t(key);
+    if (message) {
+      el.title = message;
+    }
+  });
+
+  // 4. Update page title
   const titleKey = document.querySelector('.nav-item.active')?.dataset.tab;
   if (titleKey) {
     updatePageTitle(titleKey);
@@ -66,7 +75,15 @@ function updatePageTitle(tabId) {
     'history': t('navHistory'),
     'bookmarks': t('navBookmarks')
   };
-  pageTitle.textContent = titleMap[tabId] || t('navSettings');
+  const titleText = titleMap[tabId] || t('navSettings');
+  pageTitle.textContent = titleText;
+  
+  const appName = t('appNameShort') || t('appName');
+  if (appName && titleText) {
+    document.title = `${appName} - ${titleText}`;
+  } else if (appName) {
+    document.title = appName;
+  }
 }
 
 document.getElementById('clearHistory').addEventListener('click', clearHistory);
@@ -86,6 +103,7 @@ function setupAutoSave() {
         if (el.tagName === 'SELECT' || el.type === 'checkbox') {
             el.addEventListener('change', () => {
                 if (id === 'llmProvider') updateUIState();
+                if (id === 'allowNewFolders') updateStrategyVisibility();
                 if (id === 'language') {
                     // When language changes, save then re-apply translations
                     autoSaveOptions();
@@ -101,6 +119,23 @@ function setupAutoSave() {
             });
         }
     });
+
+    // Special handling for folder strategy radio buttons
+    document.querySelectorAll('input[name="folderStrategy"]').forEach(radio => {
+        radio.addEventListener('change', autoSaveOptions);
+    });
+}
+
+function updateStrategyVisibility() {
+    const allowNewFolders = document.getElementById('allowNewFolders').checked;
+    const strategyGroup = document.getElementById('folderStrategyGroup');
+    if (strategyGroup) {
+        if (allowNewFolders) {
+            strategyGroup.style.display = 'block';
+        } else {
+            strategyGroup.style.display = 'none';
+        }
+    }
 }
 
 function debounce(func, wait) {
@@ -117,7 +152,6 @@ function debounce(func, wait) {
 
 function setupTabs() {
   const navItems = document.querySelectorAll('.nav-item');
-  const pageTitle = document.getElementById('pageTitle');
 
   navItems.forEach(item => {
     item.addEventListener('click', () => {
@@ -133,12 +167,7 @@ function setupTabs() {
       document.getElementById(tabId).classList.add('active');
 
       // 3. Update Page Title
-      const titleMap = {
-        'settings': '设置',
-        'blocked': '屏蔽规则',
-        'history': '历史记录'
-      };
-      pageTitle.textContent = titleMap[tabId] || '设置';
+      updatePageTitle(tabId);
     });
   });
 }
@@ -149,7 +178,13 @@ function autoSaveOptions() {
   const model = document.getElementById('model').value;
   const baseUrl = document.getElementById('baseUrl').value;
   const ollamaHost = document.getElementById('ollamaHost').value;
+  
   const allowNewFolders = document.getElementById('allowNewFolders').checked;
+
+  // Get value from checked radio
+  const folderCreationLevelRadio = document.querySelector('input[name="folderStrategy"]:checked');
+  const folderCreationLevel = folderCreationLevelRadio ? folderCreationLevelRadio.value : 'weak';
+  
   const enableSmartRename = document.getElementById('enableSmartRename').checked;
   const showFloatingButton = document.getElementById('showFloatingButton').checked;
   const language = document.getElementById('language').value;
@@ -162,7 +197,7 @@ function autoSaveOptions() {
   chrome.storage.sync.set(
     { 
       llmProvider, apiKey, model, baseUrl, ollamaHost, 
-      allowNewFolders, enableSmartRename, showFloatingButton, language 
+      allowNewFolders, folderCreationLevel, enableSmartRename, showFloatingButton, language 
     },
     () => {
       status.textContent = '✅ ' + (t('saveStatusSaved') || '已自动保存');
@@ -183,6 +218,7 @@ function restoreOptions() {
         baseUrl: OFFICIAL_PROXY,
         ollamaHost: '', 
         allowNewFolders: true, 
+        folderCreationLevel: 'weak',
         enableSmartRename: false, 
         showFloatingButton: true,
         language: 'zh_CN',
@@ -194,13 +230,44 @@ function restoreOptions() {
       document.getElementById('model').value = items.model;
       document.getElementById('baseUrl').value = items.baseUrl;
       document.getElementById('ollamaHost').value = items.ollamaHost;
-      document.getElementById('allowNewFolders').checked = items.allowNewFolders;
+      
+      // Migrate legacy allowNewFolders (which might be string or boolean) to new separate values
+      let allowAI = true;
+      let level = 'weak';
+
+      // 1. Check legacy values (if they exist and are not boolean/undefined mixed up)
+      if (typeof items.allowNewFolders === 'string') {
+        // Was "off", "weak", "medium", "strong"
+        if (items.allowNewFolders === 'off') {
+            allowAI = false;
+            level = 'weak'; // Default to weak if re-enabled
+        } else {
+            allowAI = true;
+            level = items.allowNewFolders;
+        }
+      } else if (typeof items.allowNewFolders === 'boolean') {
+        // Was true/false
+        allowAI = items.allowNewFolders;
+        level = 'medium'; // Legacy default was balanced
+      } else {
+        // New structure
+        allowAI = items.allowNewFolders;
+        level = items.folderCreationLevel || 'weak';
+      }
+
+      document.getElementById('allowNewFolders').checked = allowAI;
+      
+      // Select the correct radio button
+      const radio = document.querySelector(`input[name="folderStrategy"][value="${level}"]`);
+      if (radio) radio.checked = true;
+
       document.getElementById('enableSmartRename').checked = items.enableSmartRename;
       document.getElementById('showFloatingButton').checked = items.showFloatingButton;
       document.getElementById('language').value = items.language;
       
       renderBlockedList(items.disabledDomains);
       updateUIState();
+      updateStrategyVisibility();
       loadHistory();
     }
   );
@@ -242,7 +309,6 @@ function updateUIState() {
     } else if (provider === 'chatgpt') {
         apiKeyGroup.style.display = 'block';
         modelGroup.style.display = 'block';
-        baseUrlGroup.style.display = 'block'; // ChatGPT 也常需要代理
         
         hint.textContent = t('modelHintChatGPT') || '默认为 gpt-4o-mini';
         modelInput.placeholder = 'gpt-4o-mini';

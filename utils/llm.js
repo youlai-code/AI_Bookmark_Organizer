@@ -55,10 +55,42 @@ async function fetchWithRetry(resource, options = {}, retries = MAX_RETRIES) {
 
 // === Prompt Engineering ===
 
-function generatePrompt(lang, title, url, content, existingFolders, allowNewFolders, enableRename) {
+function generatePrompt(lang, title, url, content, existingFolders, folderCreationLevel, enableRename) {
+  // Backwards compatibility for boolean
+  if (typeof folderCreationLevel === 'boolean') {
+    folderCreationLevel = folderCreationLevel ? 'medium' : 'off';
+  }
+  // Default fallback
+  if (!['off', 'weak', 'medium', 'strong'].includes(folderCreationLevel)) {
+    folderCreationLevel = 'medium';
+  }
+
   const foldersStr = existingFolders.length > 0 ? existingFolders.join(', ') : (lang === 'en' ? 'None' : '无');
   const description = content.description || '';
   const keywords = content.keywords || '';
+
+  let strategyEn = '';
+  let strategyZh = '';
+
+  switch (folderCreationLevel) {
+    case 'off':
+      strategyEn = 'Strictly choose from "Existing Folders". Do NOT create new folders.';
+      strategyZh = '严格从“Existing Folders”中选择。禁止新建文件夹。';
+      break;
+    case 'weak':
+      strategyEn = 'Prioritize "Existing Folders". Only create a new folder if the content is completely unrelated to any existing ones.';
+      strategyZh = '优先使用现有文件夹。只有在内容与现有文件夹完全无关时才新建。';
+      break;
+    case 'strong':
+      strategyEn = 'Create a new specific folder if the existing ones are not a perfect fit. Prioritize accuracy.';
+      strategyZh = '如果现有文件夹不够精准，请积极新建文件夹。优先保证分类准确性。';
+      break;
+    case 'medium':
+    default:
+      strategyEn = 'Choose an existing folder if it fits well. Otherwise, create a new relevant folder.';
+      strategyZh = '如果现有文件夹合适则使用，否则新建一个相关文件夹。';
+      break;
+  }
   
   const baseInfo = `
 Page Title: ${title}
@@ -66,7 +98,7 @@ URL: ${url}
 Description: ${description}
 Keywords: ${keywords}
 Existing Folders: ${foldersStr}
-Allow New Folders: ${allowNewFolders ? 'Yes' : 'No'}
+Folder Creation Strategy: ${folderCreationLevel}
 `;
 
   if (lang === 'en') {
@@ -74,18 +106,18 @@ Allow New Folders: ${allowNewFolders ? 'Yes' : 'No'}
 ${baseInfo}
 
 Rules:
-1. Best Match: Choose the most appropriate folder from "Existing Folders".
-2. New Folder: If no match and allowed, create a short (1-3 words) English category (e.g., Tech, News).
-3. Fallback: If not allowed to create new, force pick closest existing or "Default".
+1. Strategy: ${strategyEn}
+2. If creating new: use a short (1-3 words) English category (e.g., Tech, News).
+3. Fallback: If not allowed to create new or unsure, pick closest existing or "Default".
 ${enableRename ? `4. JSON Output ONLY: {"category": "Name", "title": "Simplified Title"}` : `4. Output ONLY the category name.`}`;
   } else {
     return `请分析网页信息并进行书签分类。
 ${baseInfo}
 
 规则：
-1. 优先匹配：从“Existing Folders”中选择最合适的。
-2. 新建分类：如无匹配且允许新建，返回简短中文分类（如：技术文档、新闻）。
-3. 兜底：若不允许新建，强制选最接近的现有分类，或返回“默认收藏”。
+1. 策略：${strategyZh}
+2. 新建分类：如需新建，返回简短中文分类（如：技术文档、新闻）。
+3. 兜底：若不满足新建条件，强制选最接近的现有分类，或返回“默认收藏”。
 ${enableRename ? `4. 必须返回JSON格式：{"category": "分类名", "title": "简化标题"}` : `4. 仅返回分类名称，无其他废话。`}`;
   }
 }

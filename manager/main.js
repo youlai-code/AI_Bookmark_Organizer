@@ -46,6 +46,20 @@ function applyTranslations() {
     const message = t(key);
     if (message) el.placeholder = message;
   });
+
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    const key = el.getAttribute('data-i18n-title');
+    const message = t(key);
+    if (message) el.title = message;
+  });
+
+  const appName = t('appNameShort') || t('appName');
+  const pageName = t('navBookmarks') || '收藏夹树';
+  if (appName && pageName) {
+    document.title = `${appName} - ${pageName}`;
+  } else if (appName) {
+    document.title = appName;
+  }
 }
 
 function loadBookmarksTree() {

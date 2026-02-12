@@ -1,9 +1,15 @@
 {
+  "appNameShort": {
+    "message": "AI Bookmark Organizer"
+  },
   "appName": {
-    "message": "AIBook - Smart Bookmark Classifier"
+    "message": "AI Bookmark Organizer"
   },
   "appDesc": {
-    "message": "Automatically classify bookmarks into appropriate folders using LLM"
+    "message": "Organize and categorize bookmarks into folders with AI"
+  },
+  "managerTitle": {
+    "message": "AI Bookmark Organizer · Bookmark Tree"
   },
   "navSettings": {
     "message": "Settings"
@@ -72,13 +78,34 @@
     "message": "Your API requests will be forwarded through an encrypted proxy, no local Key required, safe and free."
   },
   "sectionBookmarkMgmt": {
-    "message": "Bookmark Management"
+    "message": "Preferences"
   },
   "allowNewFolders": {
     "message": "Allow AI to create new folders"
   },
+  "folderCreationStrategy": {
+    "message": "Folder Creation Strategy"
+  },
+  "creationLevelWeak": {
+    "message": "Conservative"
+  },
+  "creationLevelWeakDesc": {
+    "message": "Prioritize existing folders, create only when necessary"
+  },
+  "creationLevelMedium": {
+    "message": "Balanced"
+  },
+  "creationLevelMediumDesc": {
+    "message": "Create new folders moderately based on relevance"
+  },
+  "creationLevelStrong": {
+    "message": "Aggressive"
+  },
+  "creationLevelStrongDesc": {
+    "message": "Prioritize accuracy, actively create new folders"
+  },
   "allowNewFoldersHint": {
-    "message": "If disabled, AI will only choose the best match from existing folders."
+    "message": "Control how aggressively AI creates new folders."
   },
   "showFloatingButton": {
     "message": "Show floating smart bookmark button"

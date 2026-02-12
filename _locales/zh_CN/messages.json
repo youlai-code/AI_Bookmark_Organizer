@@ -3,13 +3,16 @@
     "message": "搜索书签..."
   },
   "managerTitle": {
-    "message": "AIBook 书签管理器"
+    "message": "AI书签整理 · 收藏夹树"
+  },
+  "appNameShort": {
+    "message": "AI书签整理"
   },
   "appName": {
-    "message": "AIBook - 智能书签分类器"
+    "message": "AI书签整理"
   },
   "appDesc": {
-    "message": "使用 LLM 自动分类书签到合适的文件夹"
+    "message": "使用 AI 自动整理与分类书签到合适的文件夹"
   },
   "navSettings": {
     "message": "设置"
@@ -48,7 +51,7 @@
     "message": "Gemini (Google API)"
   },
   "enabledDefaultModel": {
-    "message": "已启用默认模型"
+    "message": "已启用 DeepSeek 模型"
   },
   "defaultModelHint": {
     "message": "使用插件提供的免费加速通道，无需配置 API Key。"
@@ -81,13 +84,34 @@
     "message": "您的 API 请求将通过加密代理转发，无需填写本地 Key，安全且免费。"
   },
   "sectionBookmarkMgmt": {
-    "message": "收藏夹管理"
+    "message": "偏好设置"
   },
   "allowNewFolders": {
-    "message": "允许 AI 创建新文件夹"
+    "message": "允许 AI 自动创建文件夹"
+  },
+  "folderCreationStrategy": {
+    "message": "AI 创建文件夹分类标准"
+  },
+  "creationLevelWeak": {
+    "message": "保守"
+  },
+  "creationLevelWeakDesc": {
+    "message": "优先使用现有文件夹，除非完全不匹配才新建"
+  },
+  "creationLevelMedium": {
+    "message": "平衡"
+  },
+  "creationLevelMediumDesc": {
+    "message": "根据内容相关性适度新建文件夹"
+  },
+  "creationLevelStrong": {
+    "message": "激进"
+  },
+  "creationLevelStrongDesc": {
+    "message": "优先保证分类准确性，积极新建文件夹"
   },
   "allowNewFoldersHint": {
-    "message": "如果关闭，AI 将仅从现有文件夹中选择最匹配的一个。"
+    "message": "控制 AI 创建新文件夹的倾向程度。"
   },
   "showFloatingButton": {
     "message": "显示悬浮智能收藏按钮"

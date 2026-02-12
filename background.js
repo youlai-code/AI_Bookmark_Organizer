@@ -115,13 +115,40 @@ class SmartBookmarker {
   // LLM Classification
   async classify(title, url, content) {
     try {
-      const { allowNewFolders, enableSmartRename } = await chrome.storage.sync.get({ 
+      let { allowNewFolders, folderCreationLevel, enableSmartRename } = await chrome.storage.sync.get({ 
         allowNewFolders: true, 
+        folderCreationLevel: 'weak',
         enableSmartRename: false 
       });
+      
+      // Legacy migration logic (same as options.js to ensure consistency)
+      let finalLevel = 'weak';
+
+      if (typeof allowNewFolders === 'string') {
+          // Legacy: was string "off", "weak", "medium", "strong"
+          if (allowNewFolders === 'off') {
+            finalLevel = 'off';
+          } else {
+            finalLevel = allowNewFolders;
+          }
+      } else if (typeof allowNewFolders === 'boolean') {
+          // Current: boolean
+          if (!allowNewFolders) {
+            finalLevel = 'off';
+          } else {
+            // Use the separate level setting, or default to weak
+            finalLevel = folderCreationLevel || 'weak'; 
+          }
+      }
+
+      // Ensure 'off' is respected
+      if (finalLevel !== 'off' && !['weak', 'medium', 'strong'].includes(finalLevel)) {
+          finalLevel = 'medium';
+      }
+
       const existingFolders = await getExistingFolderNames();
       
-      const result = await classifyWithLLM(title, url, content, existingFolders, allowNewFolders, enableSmartRename);
+      const result = await classifyWithLLM(title, url, content, existingFolders, finalLevel, enableSmartRename);
       return result;
     } catch (error) {
       // If critical timeout, rethrow to stop process or handle specifically

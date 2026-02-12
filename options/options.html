@@ -2,15 +2,20 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>AIBook 插件设置</title>
+  <title>AI书签整理</title>
+  <link rel="icon" type="image/png" href="../icons/icon128.png">
   <link rel="stylesheet" href="options.css">
+  <link rel="stylesheet" href="segmented-control.css">
 </head>
 <body>
   <div class="app-container">
     <!-- 左侧侧边栏 -->
     <aside class="sidebar">
       <div class="logo-area">
-        <h1>AIBook</h1>
+        <h1>
+          <img class="app-icon" src="../icons/icon128.png" alt="">
+          <span data-i18n="appNameShort">AI书签整理</span>
+        </h1>
       </div>
       <nav class="nav-menu">
         <ul>
@@ -79,7 +84,7 @@
               <!-- Default Model Status -->
               <div id="defaultModelStatus" class="form-group status-box" style="display:none; background: #e6fffa; padding: 12px; border-radius: 4px; margin-bottom: 20px;">
                   <div style="font-weight: 500; color: #047481; display: flex; align-items: center;" data-i18n="enabledDefaultModel">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="margin-right: 6px;"><title>DeepSeek</title><path d="M23.748 4.482c-.254-.124-.364.113-.512.234-.051.039-.094.09-.137.136-.372.397-.806.657-1.373.626-.829-.046-1.537.214-2.163.848-.133-.782-.575-1.248-1.247-1.548-.352-.156-.708-.311-.955-.65-.172-.241-.219-.51-.305-.774-.055-.16-.11-.323-.293-.35-.2-.031-.278.136-.356.276-.313.572-.434 1.202-.422 1.84.027 1.436.633 2.58 1.838 3.393.137.093.172.187.129.323-.082.28-.18.552-.266.833-.055.179-.137.217-.329.14a5.526 5.526 0 01-1.736-1.18c-.857-.828-1.631-1.742-2.597-2.458a11.365 11.365 0 00-.689-.471c-.985-.957.13-1.743.388-1.836.27-.098.093-.432-.779-.428-.872.004-1.67.295-2.687.684a3.055 3.055 0 01-.465.137 9.597 9.597 0 00-2.883-.102c-1.885.21-3.39 1.102-4.497 2.623C.082 8.606-.231 10.684.152 12.85c.403 2.284 1.569 4.175 3.36 5.653 1.858 1.533 3.997 2.284 6.438 2.14 1.482-.085 3.133-.284 4.994-1.86.47.234.962.327 1.78.397.63.059 1.236-.03 1.705-.128.735-.156.684-.837.419-.961-2.155-1.004-1.682-.595-2.113-.926 1.096-1.296 2.746-2.642 3.392-7.003.05-.347.007-.565 0-.845-.004-.17.035-.237.23-.256a4.173 4.173 0 001.545-.475c1.396-.763 1.96-2.015 2.093-3.517.02-.23-.004-.467-.247-.588zM11.581 18c-2.089-1.642-3.102-2.183-3.52-2.16-.392.024-.321.471-.235.763.09.288.207.486.371.739.114.167.192.416-.113.603-.673.416-1.842-.14-1.897-.167-1.361-.802-2.5-1.86-3.301-3.307-.774-1.393-1.224-2.887-1.298-4.482-.02-.386.093-.522.477-.592a4.696 4.696 0 011.529-.039c2.132.312 3.946 1.265 5.468 2.774.868.86 1.525 1.887 2.202 2.891.72 1.066 1.494 2.082 2.48 2.914.348.292.625.514.891.677-.802.09-2.14.11-3.054-.614zm1-6.44a.306.306 0 01.415-.287.302.302 0 01.2.288.306.306 0 01-.31.307.303.303 0 01-.304-.308zm3.11 1.596c-.2.081-.399.151-.59.16a1.245 1.245 0 01-.798-.254c-.274-.23-.47-.358-.552-.758a1.73 1.73 0 01.016-.588c.07-.327-.008-.537-.239-.727-.187-.156-.426-.199-.688-.199a.559.559 0 01-.254-.078c-.11-.054-.2-.19-.114-.358.028-.054.16-.186.192-.21.356-.202.767-.136 1.146.016.352.144.618.408 1.001.782.391.451.462.576.685.914.176.265.336.537.445.848.067.195-.019.354-.25.452z" fill="#4D6BFE"></path></svg>
                     已启用默认模型
                   </div>
                   <div class="sub-hint" data-i18n="defaultModelHint">使用插件提供的免费加速通道，无需配置 API Key。</div>
@@ -149,28 +154,41 @@
               </h3>
             </div>
             <div class="card-body">
-              <div class="checkbox-group">
+              <div class="form-group checkbox-group">
                 <label>
                   <input type="checkbox" id="allowNewFolders" checked>
-                  <span data-i18n="allowNewFolders">允许 AI 创建新文件夹</span>
+                  <span data-i18n="allowNewFolders">允许 AI 自动创建文件夹</span>
                 </label>
-                <div class="sub-hint" data-i18n="allowNewFoldersHint">如果关闭，AI 将仅从现有文件夹中选择最匹配的一个。</div>
               </div>
-              
-              <div class="checkbox-group">
+
+              <div class="form-group" id="folderStrategyGroup">
+                <label data-i18n="folderCreationStrategy">AI 创建文件夹分类标准</label>
+                <div class="segmented-control">
+                  <input type="radio" name="folderStrategy" value="weak" id="strategy-weak">
+                  <label for="strategy-weak" data-i18n="creationLevelWeak" data-i18n-title="creationLevelWeakDesc">保守</label>
+                  
+                  <input type="radio" name="folderStrategy" value="medium" id="strategy-medium">
+                  <label for="strategy-medium" data-i18n="creationLevelMedium" data-i18n-title="creationLevelMediumDesc">平衡</label>
+                  
+                  <input type="radio" name="folderStrategy" value="strong" id="strategy-strong">
+                  <label for="strategy-strong" data-i18n="creationLevelStrong" data-i18n-title="creationLevelStrongDesc">激进</label>
+                </div>
+                <div class="hint" data-i18n="allowNewFoldersHint">控制 AI 创建新文件夹的倾向程度。</div>
+              </div>
+
+              <div class="form-group checkbox-group">
                 <label>
                   <input type="checkbox" id="showFloatingButton" checked>
                   <span data-i18n="showFloatingButton">显示悬浮智能收藏按钮</span>
                 </label>
-                <div class="sub-hint" data-i18n="showFloatingButtonHint">在页面右下角显示快捷收藏按钮。关闭后仍可使用快捷键 (Alt+Shift+S) 触发。</div>
+                <div class="hint" data-i18n="showFloatingButtonHint">在页面右下角显示快捷收藏按钮。关闭后仍可使用快捷键 (Alt+Shift+S) 触发。</div>
               </div>
 
-              <div class="checkbox-group">
-                <label>
+              <div class="form-group checkbox-group">
+                <label data-i18n-title="enableSmartRenameHint" style="width: fit-content;">
                   <input type="checkbox" id="enableSmartRename">
                   <span data-i18n="enableSmartRename">开启智能重命名标题</span>
                 </label>
-                <div class="sub-hint" data-i18n="enableSmartRenameHint">开启后，AI 会自动将长标题简化（例如："哔哩哔哩 (゜-゜)つロ 干杯~-bilibili" -> "哔哩哔哩"）。</div>
               </div>
             </div>
           </div>

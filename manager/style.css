@@ -26,6 +26,14 @@ body {
   font-size: 18px;
   font-weight: 600;
   color: #202124;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo .app-icon {
+  width: 20px;
+  height: 20px;
 }
 
 .search-box {
