@@ -1,5 +1,5 @@
 # AI书签整理 (AI Bookmark Organizer)
-
+![alt text](icons/Preview.png)
 ## 简介
 这是一个浏览器插件，利用 AI/大语言模型（LLM）的能力，在您添加书签时自动分析网页内容，并将其归类到合适的文件夹中，帮助您持续保持书签结构清爽可用。
 
