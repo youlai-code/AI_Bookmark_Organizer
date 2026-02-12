@@ -60,6 +60,7 @@
 ## 项目结构
 ```text
 AI Bookmark Organizer (repo root)/
+├── archive/            # 归档：上架素材/部署脚本/测试脚本（非扩展运行时）
 ├── manifest.json       # 插件配置文件
 ├── background.js       # 后台服务（监听书签事件、提取内容）
 ├── popup/              # 弹窗入口
@@ -69,7 +70,6 @@ AI Bookmark Organizer (repo root)/
 ├── options/            # 设置页
 ├── manager/            # 收藏夹树（预览与管理）
 ├── offscreen/          # Offscreen 文档（内容提取等）
-├── proxy/              # 代理/转发逻辑（如启用官方通道）
 └── utils/              # 工具函数（i18n、LLM、书签/历史等）
 ```
 

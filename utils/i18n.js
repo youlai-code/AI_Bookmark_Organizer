@@ -1,3 +1,4 @@
+import { error } from './logger.js';
 
 let messages = null;
 let currentLang = 'zh_CN';
@@ -27,7 +28,7 @@ async function loadMessages(lang) {
     const response = await fetch(url);
     messages = await response.json();
   } catch (e) {
-    console.error(`Failed to load messages for ${lang}:`, e);
+    error(`Failed to load messages for ${lang}:`, e);
     // Fallback to zh_CN
     if (lang !== 'zh_CN') {
         try {

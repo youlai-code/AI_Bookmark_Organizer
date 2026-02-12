@@ -1,4 +1,5 @@
 import { t } from './i18n.js';
+import { log, warn, error } from './logger.js';
 
 const OFFICIAL_PROXY = 'https://youlainote.cloud';
 const DEFAULT_TIMEOUT = 20000; // 20 seconds
@@ -36,7 +37,7 @@ async function fetchWithRetry(resource, options = {}, retries = MAX_RETRIES) {
   let lastError;
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      if (attempt > 0) console.log(`Retry attempt ${attempt}/${retries}...`);
+      if (attempt > 0) log(`Retry attempt ${attempt}/${retries}...`);
       const response = await fetchWithTimeout(resource, options);
       
       if (!response.ok) {
@@ -46,7 +47,7 @@ async function fetchWithRetry(resource, options = {}, retries = MAX_RETRIES) {
       return response;
     } catch (error) {
       lastError = error;
-      console.warn(`Request failed (attempt ${attempt + 1}):`, error.message);
+      warn(`Request failed (attempt ${attempt + 1}):`, error.message);
       if (attempt < retries) await sleep(RETRY_DELAY * (attempt + 1));
     }
   }
@@ -140,7 +141,7 @@ function parseResponse(text, originalTitle, enableRename) {
       category = text.replace(/["'。]/g, '').trim();
     }
   } catch (e) {
-    console.warn('JSON parse failed, using raw text:', e);
+    warn('JSON parse failed, using raw text:', e);
     category = text.replace(/["'。]/g, '').trim();
   }
 
@@ -154,7 +155,7 @@ export async function classifyWithLLM(title, url, content, existingFolders = [],
   const lang = config.language || 'zh_CN';
   
   const prompt = generatePrompt(lang, title, url, content, existingFolders, allowNewFolders, enableRename);
-  console.log('[LLM] Prompt generated for:', config.llmProvider || 'default');
+  log('[LLM] Prompt generated for:', config.llmProvider || 'default');
 
   let resultText;
   try {
@@ -183,11 +184,11 @@ export async function classifyWithLLM(title, url, content, existingFolders = [],
         break;
     }
   } catch (error) {
-    console.error('[LLM] Provider call failed:', error);
+    error('[LLM] Provider call failed:', error);
     throw error;
   }
 
-  console.log('[LLM] Raw Response:', resultText);
+  log('[LLM] Raw Response:', resultText);
   return parseResponse(resultText, title, enableRename);
 }
 
@@ -303,7 +304,7 @@ function resolveEndpoint(base, suffix) {
 }
 
 async function postJson(url, headers, body) {
-  console.log(`[POST] ${url}`);
+  log(`[POST] ${url}`);
   const response = await fetchWithRetry(url, {
     method: 'POST',
     headers,

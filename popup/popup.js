@@ -1,4 +1,5 @@
 import { initI18n, t, applyUITranslations } from '../utils/i18n.js';
+import { log, error } from '../utils/logger.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   await initI18n();
@@ -41,7 +42,7 @@ async function triggerSmartBookmark() {
     }
 
     // 发送消息给 background
-    console.log('[Popup] 发送请求到 Background:', { tabId: tab.id, url: tab.url });
+    log('[Popup] 发送请求到 Background:', { tabId: tab.id, url: tab.url });
     
     // 设置超时 Promise (防止 Popup 一直转圈)
     const timeoutPromise = new Promise((_, reject) => {
@@ -58,7 +59,7 @@ async function triggerSmartBookmark() {
     // Race
     const response = await Promise.race([sendPromise, timeoutPromise]);
     
-    console.log('[Popup] 收到响应:', response);
+    log('[Popup] 收到响应:', response);
 
     if (response && response.success) {
       const bookmarkedMsg = t('bookmarkedSuccess', { category: response.category }) || `已收藏: ${response.category}`;
@@ -77,7 +78,7 @@ async function triggerSmartBookmark() {
     }
 
   } catch (error) {
-    console.error(error);
+    error(error);
     const failMsg = t('failedPrefix') || '失败: ';
     status.textContent = `${failMsg}${error.message}`;
     status.style.color = '#d93025'; // Red

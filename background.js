@@ -2,14 +2,15 @@ import { classifyWithLLM } from './utils/llm.js';
 import { createOrGetFolder, moveBookmark, getExistingFolderNames } from './utils/bookmark.js';
 import { addHistoryItem } from './utils/history.js';
 import { initI18n, t } from './utils/i18n.js';
+import { log, warn, error } from './utils/logger.js';
 
-console.log('[Background] Service Worker Initializing...');
+log('[Background] Service Worker Initializing...');
 
 // Initialize i18n asynchronously - DO NOT await at top level
 initI18n().then(() => {
-    console.log('[Background] I18n Initialized');
+    log('[Background] I18n Initialized');
 }).catch(err => {
-    console.error('[Background] I18n Init Failed:', err);
+    error('[Background] I18n Init Failed:', err);
 });
 
 // ==========================================
@@ -31,7 +32,7 @@ class SmartBookmarker {
     const processId = url; // Simple lock key
     
     if (this.processingQueue.has(processId) && !isManual) {
-      console.log('Skipping duplicate processing for:', url);
+      log('Skipping duplicate processing for:', url);
       return;
     }
 
@@ -59,7 +60,7 @@ class SmartBookmarker {
       return { success: true, category: classification.category };
 
     } catch (error) {
-      console.error('[SmartBookmarker] Failed:', error);
+      error('[SmartBookmarker] Failed:', error);
       if (isManual && tabId) {
         this.notifyStatus(tabId, 'error', error.message);
       }
@@ -78,7 +79,7 @@ class SmartBookmarker {
     }
 
     if (!tabId || !this.isSupportedUrl(url)) {
-      console.log('[SmartBookmarker] Skipping content extraction (No tab or unsupported URL)');
+      log('[SmartBookmarker] Skipping content extraction (No tab or unsupported URL)');
       return { description: '', keywords: '', body: '' };
     }
 
@@ -105,7 +106,7 @@ class SmartBookmarker {
         return results[0].result;
       }
     } catch (error) {
-      console.warn('[SmartBookmarker] Content extraction warning:', error.message);
+      warn('[SmartBookmarker] Content extraction warning:', error.message);
       // Fail gracefully - continue without content
     }
 
@@ -154,7 +155,7 @@ class SmartBookmarker {
       // If critical timeout, rethrow to stop process or handle specifically
       if (error.message.includes('timeout')) throw error;
       
-      console.warn('[SmartBookmarker] LLM failed, using default:', error);
+      warn('[SmartBookmarker] LLM failed, using default:', error);
       return { category: t('defaultFolder') || 'Read Later', title: title };
     }
   }

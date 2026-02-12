@@ -1,6 +1,8 @@
 # Build / package outputs
 *.crx
 *.pem
+*.zip
+release/
 
 # Logs
 *.log
@@ -11,3 +13,9 @@ Thumbs.db
 Desktop.ini
 .vscode/
 .idea/
+
+# Local archives / tests (do not upload)
+archive/tests/
+**/*.test.js
+**/*.spec.js
+test_*.js

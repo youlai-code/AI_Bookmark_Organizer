@@ -46,7 +46,6 @@ async function promptAI(text) {
     
     return { result };
   } catch (e) {
-    console.error('AI Prompt Error:', e);
     throw e;
   }
 }
