@@ -38,5 +38,11 @@
       },
       "description": "一键触发智能书签分类"
     }
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["_locales/*/messages.json"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }

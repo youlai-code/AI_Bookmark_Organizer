@@ -7,6 +7,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   document.getElementById('smartBookmarkBtn').addEventListener('click', triggerSmartBookmark);
   
+  document.getElementById('openManager').addEventListener('click', () => {
+    chrome.tabs.create({ url: 'manager/index.html' });
+  });
+
   document.getElementById('openOptions').addEventListener('click', () => {
     if (chrome.runtime.openOptionsPage) {
       chrome.runtime.openOptionsPage();
@@ -37,12 +41,24 @@ async function triggerSmartBookmark() {
     }
 
     // 发送消息给 background
-    const response = await chrome.runtime.sendMessage({
+    console.log('[Popup] 发送请求到 Background:', { tabId: tab.id, url: tab.url });
+    
+    // 设置超时 Promise (防止 Popup 一直转圈)
+    const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('请求超时 (Background 无响应)')), 30000);
+    });
+
+    const sendPromise = chrome.runtime.sendMessage({
       type: 'TRIGGER_CLASSIFICATION_FROM_POPUP',
       tabId: tab.id,
       url: tab.url,
       title: tab.title
     });
+
+    // Race
+    const response = await Promise.race([sendPromise, timeoutPromise]);
+    
+    console.log('[Popup] 收到响应:', response);
 
     if (response && response.success) {
       const bookmarkedMsg = t('bookmarkedSuccess', { category: response.category }) || `已收藏: ${response.category}`;

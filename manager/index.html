@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AIBook 书签管理器</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <div class="sidebar">
+      <div class="header-area">
+        <div class="logo">AIBook Manager</div>
+      </div>
+      <div class="search-box">
+        <input type="text" id="search" placeholder="搜索书签..." data-i18n-placeholder="searchPlaceholder">
+      </div>
+      <div class="tree-container">
+        <div id="bookmarkTree" class="tree-view">
+          <!-- Tree rendered here -->
+        </div>
+      </div>
+    </div>
+    <div class="content">
+      <div id="emptyState" class="empty-state">
+        <h1 data-i18n="managerWelcome">欢迎使用 AIBook 书签管理器</h1>
+        <p data-i18n="managerSelectHint">请从左侧选择一个书签或文件夹进行查看和编辑。</p>
+      </div>
+      <!-- Detail view will be injected here -->
+    </div>
+  </div>
+
+  <!-- Context Menu -->
+  <div id="contextMenu" class="context-menu">
+    <div class="menu-item" id="ctxEdit">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+      <span data-i18n="ctxEdit">编辑</span>
+    </div>
+    <div class="menu-item danger" id="ctxDelete">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+      <span data-i18n="ctxDelete">删除</span>
+    </div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div id="editModal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 data-i18n="modalEditTitle">编辑收藏夹</h3>
+        <button class="close-btn" id="closeModal">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editId">
+        
+        <div class="form-group">
+          <label data-i18n="labelName">名称</label>
+          <input type="text" id="editTitle">
+        </div>
+
+        <div class="form-group" id="editUrlGroup">
+          <label data-i18n="labelUrl">URL</label>
+          <input type="text" id="editUrl">
+        </div>
+
+        <div class="form-group">
+          <label data-i18n="labelFolder">文件夹</label>
+          <div class="folder-selector" id="folderSelector">
+            <!-- 动态加载文件夹树 -->
+          </div>
+          <input type="hidden" id="editParentId">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="text-btn" id="cancelEdit" data-i18n="btnCancel">取消</button>
+        <button class="primary-btn" id="saveEdit" data-i18n="btnSave">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="main.js" type="module"></script>
+</body>
+</html>

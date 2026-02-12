@@ -14,6 +14,9 @@
   "navHistory": {
     "message": "历史记录"
   },
+  "navManager": {
+    "message": "书签管理器"
+  },
   "navBookmarks": {
     "message": "收藏夹树"
   },

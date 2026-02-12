@@ -32,6 +32,11 @@ body {
   letter-spacing: 0.5px;
 }
 
+.actions {
+  display: flex;
+  align-items: center;
+}
+
 .icon-btn {
   background: none;
   border: none;

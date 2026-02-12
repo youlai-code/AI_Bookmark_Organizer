@@ -1,4 +1,4 @@
-const OFFICIAL_PROXY = 'https://aibookmark.tenb68.workers.dev';
+const OFFICIAL_PROXY = 'https://youlainote.cloud';
 import { initI18n, t } from '../utils/i18n.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -69,7 +69,6 @@ function updatePageTitle(tabId) {
   pageTitle.textContent = titleMap[tabId] || t('navSettings');
 }
 
-// document.getElementById('save').addEventListener('click', saveOptions); // Removed save button
 document.getElementById('clearHistory').addEventListener('click', clearHistory);
 
 function setupAutoSave() {
@@ -137,14 +136,9 @@ function setupTabs() {
       const titleMap = {
         'settings': '设置',
         'blocked': '屏蔽规则',
-        'history': '历史记录',
-        'bookmarks': '收藏夹树'
+        'history': '历史记录'
       };
       pageTitle.textContent = titleMap[tabId] || '设置';
-
-      if (tabId === 'bookmarks') {
-        loadBookmarksTree();
-      }
     });
   });
 }

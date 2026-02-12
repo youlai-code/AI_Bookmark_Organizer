@@ -3,257 +3,295 @@ import { createOrGetFolder, moveBookmark, getExistingFolderNames } from './utils
 import { addHistoryItem } from './utils/history.js';
 import { initI18n, t } from './utils/i18n.js';
 
-// Initialize i18n
-await initI18n();
+console.log('[Background] Service Worker Initializing...');
 
-// 记录最近由插件自动创建的书签URL，避免onCreated重复处理
-const recentlyProcessedUrls = new Set();
-
-// 监听书签创建事件 (原生收藏)
-chrome.bookmarks.onCreated.addListener(async (id, bookmark) => {
-  if (!bookmark.url) return;
-  
-  // 如果是刚刚由插件处理过的，跳过
-  if (recentlyProcessedUrls.has(bookmark.url)) {
-      recentlyProcessedUrls.delete(bookmark.url);
-      return;
-  }
-  
-  try {
-    console.log(`正在处理原生书签: ${bookmark.title}`);
-    const pageContent = await extractPageContent(bookmark.url);
-    await processBookmarkClassification(id, bookmark.title, bookmark.url, pageContent);
-  } catch (error) {
-    console.error('自动分类失败:', error);
-  }
+// Initialize i18n asynchronously - DO NOT await at top level
+initI18n().then(() => {
+    console.log('[Background] I18n Initialized');
+}).catch(err => {
+    console.error('[Background] I18n Init Failed:', err);
 });
 
-// 监听键盘快捷键
-chrome.commands.onCommand.addListener(async (command) => {
-  if (command === 'trigger_smart_bookmark') {
-    try {
-      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-      const tab = tabs[0];
-      if (tab) {
-        console.log('通过快捷键触发智能收藏:', tab.title);
-        
-        // 发送“开始处理”的提示（可选，先给用户一个反馈）
-        chrome.tabs.sendMessage(tab.id, {
-            type: 'SHOW_TOAST',
-            message: t('toastAnalyzing'),
-            status: 'info'
-        }).catch(() => {});
+// ==========================================
+// Smart Bookmarker Controller
+// ==========================================
+class SmartBookmarker {
+  constructor() {
+    this.recentlyProcessedUrls = new Set();
+    this.processingQueue = new Set(); // Prevent double processing
+  }
 
-        await handleManualTrigger(tab.id, tab.url, tab.title);
+  // Check if URL is supported for content extraction
+  isSupportedUrl(url) {
+    return url && (url.startsWith('http://') || url.startsWith('https://'));
+  }
+
+  // Main entry point for bookmarking logic
+  async process({ tabId, url, title, bookmarkId = null, isManual = false }) {
+    const processId = url; // Simple lock key
+    
+    if (this.processingQueue.has(processId) && !isManual) {
+      console.log('Skipping duplicate processing for:', url);
+      return;
+    }
+
+    this.processingQueue.add(processId);
+    if (isManual) this.notifyStatus(tabId, 'analyzing');
+
+    try {
+      // 1. Extract Content
+      const content = await this.extractContent(tabId, url);
+      
+      // 2. Classify
+      const classification = await this.classify(title, url, content);
+      
+      // 3. Save/Update Bookmark
+      await this.save(classification, url, title, bookmarkId);
+
+      // 4. Notify User
+      if (isManual && tabId) {
+        this.notifyStatus(tabId, 'success', classification.category);
+      } else if (!isManual) {
+        // For auto-processing, try to find active tab to notify
+        this.notifyActiveTab(url, 'auto_success', classification.category);
+      }
+
+      return { success: true, category: classification.category };
+
+    } catch (error) {
+      console.error('[SmartBookmarker] Failed:', error);
+      if (isManual && tabId) {
+        this.notifyStatus(tabId, 'error', error.message);
+      }
+      return { success: false, error: error.message };
+
+    } finally {
+      this.processingQueue.delete(processId);
+    }
+  }
+
+  // Extract content safely
+  async extractContent(tabId, url) {
+    // If no tabId provided (e.g. background bookmark creation), try to find a matching tab
+    if (!tabId) {
+      tabId = await this.findTabByUrl(url);
+    }
+
+    if (!tabId || !this.isSupportedUrl(url)) {
+      console.log('[SmartBookmarker] Skipping content extraction (No tab or unsupported URL)');
+      return { description: '', keywords: '', body: '' };
+    }
+
+    try {
+      // Inject script with timeout
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Content extraction timed out')), 5000)
+      );
+
+      const executionPromise = chrome.scripting.executeScript({
+        target: { tabId: tabId },
+        func: () => {
+          const description = document.querySelector('meta[name="description"]')?.content || '';
+          const keywords = document.querySelector('meta[name="keywords"]')?.content || '';
+          // Limit body text to avoid token limits
+          const body = document.body ? document.body.innerText.substring(0, 1000).replace(/\s+/g, ' ') : ''; 
+          return { description, keywords, body };
+        }
+      });
+
+      const results = await Promise.race([executionPromise, timeoutPromise]);
+      
+      if (results && results[0] && results[0].result) {
+        return results[0].result;
       }
     } catch (error) {
-      console.error('快捷键处理失败:', error);
+      console.warn('[SmartBookmarker] Content extraction warning:', error.message);
+      // Fail gracefully - continue without content
+    }
+
+    return { description: '', keywords: '', body: '' };
+  }
+
+  // LLM Classification
+  async classify(title, url, content) {
+    try {
+      const { allowNewFolders, enableSmartRename } = await chrome.storage.sync.get({ 
+        allowNewFolders: true, 
+        enableSmartRename: false 
+      });
+      const existingFolders = await getExistingFolderNames();
+      
+      const result = await classifyWithLLM(title, url, content, existingFolders, allowNewFolders, enableSmartRename);
+      return result;
+    } catch (error) {
+      // If critical timeout, rethrow to stop process or handle specifically
+      if (error.message.includes('timeout')) throw error;
+      
+      console.warn('[SmartBookmarker] LLM failed, using default:', error);
+      return { category: t('defaultFolder') || 'Read Later', title: title };
     }
   }
-});
 
-// 监听消息 (Popup 或 Content Script)
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    // 来自 Popup 的主动收藏请求
-    if (request.type === 'TRIGGER_CLASSIFICATION_FROM_POPUP') {
-        handleManualTrigger(request.tabId, request.url, request.title)
-            .then(result => sendResponse(result))
-            .catch(error => sendResponse({ success: false, error: error.message }));
-        return true; // 异步响应
-    }
+  // Save to bookmarks
+  async save(classification, url, originalTitle, bookmarkId) {
+    const { category, title: newTitle } = classification;
+    const folderId = await createOrGetFolder(category);
 
-    // 来自 Content Script 的消息 (保留接口，目前主要用Popup)
-    if (request.type === 'AI_BOOKMARK') {
-        const tabId = sender.tab ? sender.tab.id : null;
-        handleAiBookmarkRequest(request.data, tabId)
-            .then(result => sendResponse(result))
-            .catch(error => sendResponse({ success: false, error: error.message }));
-        return true;
-    }
-});
-
-// 处理 Popup 手动触发
-async function handleManualTrigger(tabId, url, title) {
-    try {
-        console.log('收到手动收藏请求:', title);
-        
-        // 1. 提取内容 (需要指定 tabId)
-        let content = { description: '', keywords: '' };
-        if (tabId) {
-            content = await extractPageContentFromTab(tabId);
-        } else {
-             // 如果没有 tabId (极少情况)，尝试仅根据 URL 提取或跳过
-             console.warn('未提供 tabId，无法提取页面内容');
+    // If updating an existing bookmark object (from onCreated)
+    if (bookmarkId) {
+      await moveBookmark(bookmarkId, folderId);
+      if (newTitle && newTitle !== originalTitle) {
+        await chrome.bookmarks.update(bookmarkId, { title: newTitle });
+      }
+    } else {
+      // Creating a new one (Manual trigger)
+      // Check if already exists to avoid duplicates
+      const existing = await this.findBookmarkByUrl(url);
+      if (existing) {
+        await moveBookmark(existing.id, folderId);
+        if (newTitle && newTitle !== existing.title) {
+          await chrome.bookmarks.update(existing.id, { title: newTitle });
         }
-        
-        // 2. LLM 分类
-        let category;
-        let newTitle = title;
-        
-        try {
-            // 获取设置和现有文件夹
-            const { allowNewFolders, enableSmartRename } = await chrome.storage.sync.get({ 
-                allowNewFolders: true, 
-                enableSmartRename: false 
-            });
-            const existingFolders = await getExistingFolderNames();
-            
-            const result = await classifyWithLLM(title, url, content, existingFolders, allowNewFolders, enableSmartRename);
-            category = result.category;
-            newTitle = result.title;
-            
-        } catch (error) {
-            console.warn('LLM分类失败:', error);
-            // 如果是超时错误，直接抛出，不再降级到默认分类
-            if (error.message.includes('超时') || error.message.includes('timed out')) {
-                throw error;
-            }
-            // 其他错误降级处理
-            category = t('defaultFolder');
-        }
-        
-        // 3. 执行收藏逻辑
-        const folderId = await createOrGetFolder(category);
-        const existing = await findBookmarkByUrl(url);
-        
-        if (existing) {
-            // 移动现有书签
-            await moveBookmark(existing.id, folderId);
-            // 如果标题有变化，更新标题
-            if (newTitle && newTitle !== existing.title) {
-                await chrome.bookmarks.update(existing.id, { title: newTitle });
-            }
-        } else {
-            recentlyProcessedUrls.add(url);
-            await chrome.bookmarks.create({
-                parentId: folderId,
-                title: newTitle || title,
-                url: url
-            });
-            setTimeout(() => recentlyProcessedUrls.delete(url), 10000);
-        }
-        
-        // 4. 发送 Toast 消息给页面 (反馈给用户)
-        if (tabId) {
-            chrome.tabs.sendMessage(tabId, {
-                type: 'SHOW_TOAST',
-                message: t('bookmarkedSuccess', { category }),
-                status: 'success'
-            }).catch(() => {}); // 忽略错误（如果页面未加载完成）
-        }
-        
-        // 5. 记录历史
-        await addHistoryItem({ title: newTitle || title, url, category });
-
-        return { success: true, category };
-        
-    } catch (error) {
-        console.error('手动处理失败:', error);
-        // 发送错误提示
-        if (tabId) {
-             chrome.tabs.sendMessage(tabId, {
-                type: 'SHOW_TOAST',
-                message: t('failedPrefix') + error.message,
-                status: 'error'
-            }).catch(() => {});
-        }
-        return { success: false, error: error.message };
-    }
-}
-
-// 处理悬浮球请求 (保留逻辑)
-async function handleAiBookmarkRequest(data, tabId) {
-    // ... (逻辑同上，只是入口参数不同)
-    // 为简化代码，这里不再赘述，实际上 Popup 触发是目前主要方式
-    return handleManualTrigger(tabId, data.url, data.title); 
-}
-
-// 通用分类逻辑 (用于原生监听)
-async function processBookmarkClassification(bookmarkId, title, url, pageContent) {
-    let category;
-    let newTitle = title;
-
-    try {
-        const { allowNewFolders, enableSmartRename } = await chrome.storage.sync.get({ 
-            allowNewFolders: true, 
-            enableSmartRename: false 
+      } else {
+        // Mark as recently processed to avoid onCreated loop
+        this.recentlyProcessedUrls.add(url);
+        await chrome.bookmarks.create({
+          parentId: folderId,
+          title: newTitle || originalTitle,
+          url: url
         });
-        const existingFolders = await getExistingFolderNames();
-        
-        const result = await classifyWithLLM(title, url, pageContent, existingFolders, allowNewFolders, enableSmartRename);
-        category = result.category;
-        newTitle = result.title;
-    } catch (error) {
-        console.warn('LLM分类失败，使用默认分类:', error);
-        category = t('defaultFolder');
+        // Cleanup cache after 10s
+        setTimeout(() => this.recentlyProcessedUrls.delete(url), 10000);
+      }
     }
-    console.log(`分类结果: ${category}, 新标题: ${newTitle}`);
-    
-    if (category) {
-        const folderId = await createOrGetFolder(category);
-        await moveBookmark(bookmarkId, folderId);
-        
-        // 如果标题改变了，更新书签
-        if (newTitle && newTitle !== title) {
-            await chrome.bookmarks.update(bookmarkId, { title: newTitle });
-        }
-        
-        // 记录历史
-        await addHistoryItem({ title: newTitle || title, url, category });
 
-        // 尝试发送 Toast 通知
-        try {
-            const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-            if (tabs[0] && tabs[0].url === url) {
-                 chrome.tabs.sendMessage(tabs[0].id, {
-                    type: 'SHOW_TOAST',
-                    message: t('toastAutoBookmarked', { category }),
-                    status: 'success'
-                });
-            }
-        } catch (e) {}
-    }
-}
-
-// 从指定标签页提取内容
-async function extractPageContentFromTab(tabId) {
-    try {
-        const results = await chrome.scripting.executeScript({
-            target: { tabId: tabId },
-            func: () => {
-                const description = document.querySelector('meta[name="description"]')?.content || '';
-                const keywords = document.querySelector('meta[name="keywords"]')?.content || '';
-                const body = document.body.innerText.substring(0, 500).replace(/\s+/g, ' ');
-                return { description, keywords, body };
-            }
-        });
-        
-        if (results && results[0] && results[0].result) {
-            return results[0].result;
-        }
-    } catch (e) {
-        console.warn('无法提取内容:', e);
-    }
-    return { description: '', keywords: '' };
-}
-
-// 查找匹配 URL 的内容 (用于 onCreated)
-async function extractPageContent(url) {
-  try {
-    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-    const tab = tabs[0];
-    
-    // 简单匹配
-    if (tab && (tab.url === url || tab.url.startsWith(url) || url.startsWith(tab.url))) {
-        return await extractPageContentFromTab(tab.id);
-    }
-  } catch (e) {
-      console.warn('无法从标签页提取内容:', e);
+    // Add to history
+    await addHistoryItem({ 
+      title: newTitle || originalTitle, 
+      url, 
+      category 
+    });
   }
-  return { description: '', keywords: '' };
-}
 
-async function findBookmarkByUrl(url) {
+  // Helpers
+  async findTabByUrl(url) {
+    try {
+      const tabs = await chrome.tabs.query({ url: url });
+      if (tabs && tabs.length > 0) return tabs[0].id;
+      
+      // Fallback: active tab?
+      const activeTabs = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (activeTabs.length > 0 && activeTabs[0].url === url) return activeTabs[0].id;
+    } catch (e) { /* ignore */ }
+    return null;
+  }
+
+  async findBookmarkByUrl(url) {
     const results = await chrome.bookmarks.search({ url });
     return results.length > 0 ? results[0] : null;
+  }
+
+  notifyStatus(tabId, status, messageOrCategory) {
+    if (!tabId) return;
+    
+    let msg = '';
+    let type = 'info';
+
+    switch (status) {
+      case 'analyzing':
+        msg = t('toastAnalyzing') || 'Analyzing...';
+        type = 'info';
+        break;
+      case 'success':
+        msg = t('bookmarkedSuccess', { category: messageOrCategory });
+        type = 'success';
+        break;
+      case 'error':
+        msg = (t('failedPrefix') || 'Failed: ') + messageOrCategory;
+        type = 'error';
+        break;
+    }
+
+    chrome.tabs.sendMessage(tabId, {
+      type: 'SHOW_TOAST',
+      message: msg,
+      status: type
+    }).catch(() => {}); // Ignore if content script not ready
+  }
+
+  async notifyActiveTab(url, type, category) {
+    try {
+      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (tabs[0] && tabs[0].url === url) {
+        chrome.tabs.sendMessage(tabs[0].id, {
+          type: 'SHOW_TOAST',
+          message: t('toastAutoBookmarked', { category }),
+          status: 'success'
+        }).catch(() => {});
+      }
+    } catch (e) {}
+  }
 }
+
+const bookmarker = new SmartBookmarker();
+
+// ==========================================
+// Event Listeners
+// ==========================================
+
+// 1. Native Bookmark Creation
+chrome.bookmarks.onCreated.addListener(async (id, bookmark) => {
+  if (!bookmark.url) return; // Folder
+  if (bookmarker.recentlyProcessedUrls.has(bookmark.url)) return; // Created by us
+  if (!bookmarker.isSupportedUrl(bookmark.url)) return; // Local file or chrome://
+
+  await bookmarker.process({
+    tabId: null, // Will try to find tab
+    url: bookmark.url,
+    title: bookmark.title,
+    bookmarkId: id,
+    isManual: false
+  });
+});
+
+// 2. Keyboard Shortcuts
+chrome.commands.onCommand.addListener(async (command) => {
+  if (command === 'trigger_smart_bookmark') {
+    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    const tab = tabs[0];
+    if (tab && bookmarker.isSupportedUrl(tab.url)) {
+      await bookmarker.process({
+        tabId: tab.id,
+        url: tab.url,
+        title: tab.title,
+        isManual: true
+      });
+    }
+  }
+});
+
+// 3. Message Passing (Popup & Content Script)
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  // Case A: Popup Trigger
+  if (request.type === 'TRIGGER_CLASSIFICATION_FROM_POPUP') {
+    bookmarker.process({
+      tabId: request.tabId,
+      url: request.url,
+      title: request.title,
+      isManual: true
+    }).then(result => sendResponse(result));
+    return true; // Keep channel open
+  }
+
+  // Case B: Content Script Floating Button Trigger
+  if (request.type === 'AI_BOOKMARK') {
+    const tabId = sender.tab ? sender.tab.id : null;
+    bookmarker.process({
+      tabId: tabId,
+      url: request.data.url,
+      title: request.data.title,
+      isManual: true // Floating button is considered manual trigger
+    }).then(result => sendResponse(result));
+    return true; // Keep channel open
+  }
+});
