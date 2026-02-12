@@ -180,10 +180,10 @@
     "message": "正在保存..."
   },
   "popupSmartBookmark": {
-    "message": "智能收藏"
+    "message": "收藏此页面"
   },
   "popupRecentHistory": {
-    "message": "最近记录"
+    "message": "收藏记录"
   },
   "popupNoHistory": {
     "message": "暂无记录"

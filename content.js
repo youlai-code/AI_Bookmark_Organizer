@@ -62,11 +62,10 @@ async function createFloatingButton() {
   btn.id = 'aibook-floating-btn';
   btn.title = I18n.t('floatingBtnTitle');
   
-  // 极简风格的星星图标
+  // 极简风格的图标 (PNG)
+  const iconUrl = chrome.runtime.getURL('icons/icon128.png');
   btn.innerHTML = `
-    <svg viewBox="0 0 24 24">
-      <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-    </svg>
+    <img src="${iconUrl}" draggable="false" alt="AI Bookmark" />
   `;
   
   // 绑定事件
@@ -248,13 +247,12 @@ function showToast(message, type = 'info') {
 // 处理收藏点击
 async function handleBookmark() {
   const btn = document.getElementById('aibook-floating-btn');
-  const svg = btn.querySelector('svg');
   
   if (btn.dataset.loading === 'true') return;
   
   // 动画状态
   btn.dataset.loading = 'true';
-  svg.classList.add('aibook-loading');
+  btn.classList.add('aibook-loading');
   
   try {
     const pageInfo = {
@@ -283,9 +281,11 @@ async function handleBookmark() {
     
     if (response && response.success) {
       showToast(I18n.t('bookmarkedSuccess', { category: response.category }), 'success');
-      // 成功后可以让星星短暂变色，然后恢复
-      svg.style.fill = '#188038';
-      setTimeout(() => { svg.style.fill = ''; }, 2000);
+      // 成功后按钮变绿
+      btn.classList.add('aibook-success');
+      setTimeout(() => { 
+          btn.classList.remove('aibook-success');
+      }, 2000);
     } else {
       throw new Error(response.error || '未知错误');
     }
@@ -296,7 +296,7 @@ async function handleBookmark() {
   } finally {
     // 恢复状态
     btn.dataset.loading = 'false';
-    svg.classList.remove('aibook-loading');
+    btn.classList.remove('aibook-loading');
   }
 }
 

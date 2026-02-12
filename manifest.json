@@ -51,7 +51,10 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["_locales/*/messages.json"],
+      "resources": [
+        "_locales/*/messages.json",
+        "icons/*.png"
+      ],
       "matches": ["<all_urls>"]
     }
   ]

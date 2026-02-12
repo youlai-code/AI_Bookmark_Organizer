@@ -174,10 +174,10 @@
     "message": "Saving..."
   },
   "popupSmartBookmark": {
-    "message": "Smart Bookmark"
+    "message": "Bookmark This Page"
   },
   "popupRecentHistory": {
-    "message": "Recent Records"
+    "message": "Bookmark History"
   },
   "popupNoHistory": {
     "message": "No records"

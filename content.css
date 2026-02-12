@@ -3,81 +3,75 @@
   position: fixed;
   bottom: 20px;
   right: 20px;
-  width: 32px;
-  height: 32px;
-  background-color: rgba(255, 255, 255, 0.9);
-  border: 1px solid #e0e0e0;
+  width: 40px; /* 稍微加大一点以适应PNG */
+  height: 40px;
+  background-color: #F0F3F8; /* 亮中性色 */
+  border: 1px solid #d0d7de;
   border-radius: 50%;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  z-index: 2147483647; /* 确保在最顶层 */
-  cursor: grab; /* 拖动光标 */
+  z-index: 2147483647;
+  cursor: grab;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease; /* 移除 transform 动画，避免干扰拖动 */
-  opacity: 0.6; /* 默认半透明，不干扰阅读 */
+  transition: all 0.2s ease;
+  opacity: 0.8;
   user-select: none;
+  overflow: hidden; /* 防止图片溢出圆角 */
 }
 
-#aibook-floating-btn:active {
-  cursor: grabbing;
+#aibook-floating-btn img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  transition: transform 0.3s ease;
 }
 
 #aibook-floating-btn:hover {
-  /* transform: scale(1.1); 移除缩放，防止拖动时抖动 */
   opacity: 1;
   background-color: #fff;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: scale(1.05);
 }
 
-/* 自定义右键菜单 */
-#aibook-context-menu {
-  position: fixed;
-  background: white;
-  border: 1px solid #ccc;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-  padding: 5px 0;
-  border-radius: 4px;
-  z-index: 2147483648;
-  font-family: sans-serif;
-  font-size: 13px;
-  min-width: 120px;
-  display: none;
+#aibook-floating-btn:hover img {
+  transform: scale(1.1);
 }
 
-.aibook-menu-item {
-  padding: 8px 12px;
-  cursor: pointer;
-  color: #333;
-  transition: background 0.2s;
-}
-
-.aibook-menu-item:hover {
-  background-color: #f1f1f1;
-}
-
-
-#aibook-floating-btn svg {
-  width: 16px;
-  height: 16px;
-  fill: #5f6368; /* 灰色图标，低调 */
-  transition: fill 0.2s;
-}
-
-#aibook-floating-btn:hover svg {
-  fill: #4D6BFE;
-}
-
-/* 加载动画 */
+/* Loading Animation - Ripple/Pulse effect */
 .aibook-loading {
-  animation: aibook-spin 1s linear infinite;
-  fill: #4D6BFE !important;
+  animation: aibook-pulse 1.5s infinite;
+  border-color: #4D6BFE !important;
 }
 
-@keyframes aibook-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.aibook-loading img {
+  opacity: 0.5;
 }
+
+@keyframes aibook-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(77, 107, 254, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(77, 107, 254, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(77, 107, 254, 0);
+  }
+}
+
+/* Success Animation */
+.aibook-success {
+  background-color: #e6ffed !important;
+  border-color: #188038 !important;
+}
+
+.aibook-success img {
+  transform: scale(1.2);
+}
+
+/* Clean up old SVG styles */
+#aibook-floating-btn svg { display: none; }
 
 /* Toast 提示 */
 #aibook-toast {
