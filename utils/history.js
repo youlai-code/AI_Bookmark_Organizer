@@ -8,6 +8,7 @@ export async function addHistoryItem(item) {
     title: item.title,
     url: item.url,
     category: item.category,
+    bookmarkId: item.bookmarkId,
     status: item.status || 'success'
   };
 

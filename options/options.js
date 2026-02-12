@@ -91,7 +91,7 @@ document.getElementById('clearHistory').addEventListener('click', clearHistory);
 function setupAutoSave() {
     const inputs = [
         'llmProvider', 'apiKey', 'model', 'baseUrl', 'ollamaHost',
-        'allowNewFolders', 'enableSmartRename', 'showFloatingButton', 'language'
+        'allowNewFolders', 'enableSmartRename', 'showFloatingButton', 'language', 'theme'
     ];
     
     const debouncedSave = debounce(autoSaveOptions, 800);
@@ -104,6 +104,7 @@ function setupAutoSave() {
             el.addEventListener('change', () => {
                 if (id === 'llmProvider') updateUIState();
                 if (id === 'allowNewFolders') updateStrategyVisibility();
+                if (id === 'theme') applyTheme(el.value);
                 if (id === 'language') {
                     // When language changes, save then re-apply translations
                     autoSaveOptions();
@@ -188,6 +189,7 @@ function autoSaveOptions() {
   const enableSmartRename = document.getElementById('enableSmartRename').checked;
   const showFloatingButton = document.getElementById('showFloatingButton').checked;
   const language = document.getElementById('language').value;
+  const theme = document.getElementById('theme').value;
   
   // Show saving status
   const status = document.getElementById('saveStatus');
@@ -197,7 +199,7 @@ function autoSaveOptions() {
   chrome.storage.sync.set(
     { 
       llmProvider, apiKey, model, baseUrl, ollamaHost, 
-      allowNewFolders, folderCreationLevel, enableSmartRename, showFloatingButton, language 
+      allowNewFolders, folderCreationLevel, enableSmartRename, showFloatingButton, language, theme 
     },
     () => {
       status.textContent = '✅ ' + (t('saveStatusSaved') || '已自动保存');
@@ -222,6 +224,7 @@ function restoreOptions() {
         enableSmartRename: false, 
         showFloatingButton: true,
         language: 'zh_CN',
+        theme: 'auto',
         disabledDomains: [] 
     },
     (items) => {
@@ -274,7 +277,9 @@ function restoreOptions() {
       document.getElementById('enableSmartRename').checked = items.enableSmartRename;
       document.getElementById('showFloatingButton').checked = items.showFloatingButton;
       document.getElementById('language').value = items.language;
+      document.getElementById('theme').value = items.theme || 'auto';
       
+      applyTheme(items.theme || 'auto');
       renderBlockedList(items.disabledDomains);
       updateUIState();
       updateStrategyVisibility();
@@ -361,19 +366,93 @@ function renderHistoryList(history) {
   history.forEach(item => {
     const li = document.createElement('li');
     li.className = 'history-item';
-    
-    const date = new Date(item.timestamp).toLocaleString();
-    
-    li.innerHTML = `
-      <div class="history-header">
-        <div class="history-title" title="${item.title}">${item.title}</div>
-        <div class="history-category">${item.category}</div>
-      </div>
-      <div class="history-url" title="${item.url}">${item.url}</div>
-      <div class="history-time">${date}</div>
-    `;
+
+    const header = document.createElement('div');
+    header.className = 'history-header';
+
+    const titleDiv = document.createElement('div');
+    titleDiv.className = 'history-title';
+    titleDiv.textContent = item.title || item.url || '';
+    titleDiv.title = item.title || item.url || '';
+
+    const metaDiv = document.createElement('div');
+    metaDiv.className = 'history-meta';
+
+    const categoryDiv = document.createElement('div');
+    categoryDiv.className = 'history-category';
+    categoryDiv.textContent = item.category || '';
+
+    const unbookmarkBtn = document.createElement('button');
+    unbookmarkBtn.className = 'text-btn danger unbookmark-btn';
+    unbookmarkBtn.textContent = t('unbookmark') || '取消收藏';
+    unbookmarkBtn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      await handleUnbookmark(item);
+    });
+
+    metaDiv.appendChild(categoryDiv);
+    metaDiv.appendChild(unbookmarkBtn);
+
+    header.appendChild(titleDiv);
+    header.appendChild(metaDiv);
+
+    const urlDiv = document.createElement('div');
+    urlDiv.className = 'history-url';
+    urlDiv.textContent = item.url || '';
+    urlDiv.title = item.url || '';
+
+    const timeDiv = document.createElement('div');
+    timeDiv.className = 'history-time';
+    timeDiv.textContent = item.timestamp ? new Date(item.timestamp).toLocaleString() : '';
+
+    li.appendChild(header);
+    li.appendChild(urlDiv);
+    li.appendChild(timeDiv);
+
+    li.addEventListener('click', () => {
+      if (item.url) openUrl(item.url);
+    });
+
     list.appendChild(li);
   });
+}
+
+function openUrl(url) {
+  if (!url) return;
+  chrome.tabs.create({ url });
+}
+
+async function handleUnbookmark(item) {
+  if (!item || !item.url) return;
+
+  const confirmMsg = t('confirmUnbookmark') || '确定要取消收藏该链接吗？';
+  if (!confirm(confirmMsg)) return;
+
+  let bookmarkId = item.bookmarkId;
+
+  if (!bookmarkId) {
+    const found = await chrome.bookmarks.search({ url: item.url });
+    if (found && found.length > 0) {
+      bookmarkId = found[0].id;
+    }
+  }
+
+  if (!bookmarkId) {
+    alert(t('unbookmarkNotFound') || '未找到对应书签，可能已被删除或移动。');
+    return;
+  }
+
+  try {
+    await chrome.bookmarks.remove(bookmarkId);
+  } catch (e) {
+    alert((t('unbookmarkFailed') || '取消收藏失败：') + (e?.message || e));
+    return;
+  }
+
+  const { history } = await chrome.storage.local.get({ history: [] });
+  const nextHistory = (history || []).filter(h => h.id !== item.id);
+  await chrome.storage.local.set({ history: nextHistory });
+  loadHistory();
 }
 
 function clearHistory() {

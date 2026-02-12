@@ -6,6 +6,7 @@
   <link rel="icon" type="image/png" href="../icons/icon128.png">
   <link rel="stylesheet" href="options.css">
   <link rel="stylesheet" href="segmented-control.css">
+  <script src="theme_utils.js"></script>
 </head>
 <body>
   <div class="app-container">
@@ -169,6 +170,22 @@
                   <span data-i18n="enableSmartRename">开启智能重命名标题</span>
                 </label>
               </div>
+
+              <!-- Appearance Settings -->
+              <div class="form-group" style="margin-top: 24px; border-top: 1px solid #dadce0; padding-top: 16px;">
+                  <label data-i18n="appearanceSettings">外观设置</label>
+                  <div style="display: flex; gap: 16px; align-items: center;">
+                      <div class="form-group" style="margin-bottom: 0; flex: 1;">
+                          <label data-i18n="theme" style="font-size: 13px; margin-bottom: 4px;">主题颜色</label>
+                          <select id="theme">
+                              <option value="auto" data-i18n="themeAuto">跟随系统</option>
+                              <option value="light" data-i18n="themeLight">浅色</option>
+                              <option value="dark" data-i18n="themeDark">深色</option>
+                          </select>
+                      </div>
+                  </div>
+              </div>
+
             </div>
           </div>
         </div>

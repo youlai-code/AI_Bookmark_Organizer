@@ -209,6 +209,21 @@
   "language": {
     "message": "显示语言"
   },
+  "appearanceSettings": {
+    "message": "外观设置"
+  },
+  "theme": {
+    "message": "主题颜色"
+  },
+  "themeAuto": {
+    "message": "跟随系统"
+  },
+  "themeLight": {
+    "message": "浅色"
+  },
+  "themeDark": {
+    "message": "深色"
+  },
   "langZh": {
     "message": "简体中文"
   },
@@ -229,6 +244,18 @@
   },
   "confirmClearHistory": {
     "message": "确定要清空所有历史记录吗？"
+  },
+  "unbookmark": {
+    "message": "取消收藏"
+  },
+  "confirmUnbookmark": {
+    "message": "确定要取消收藏该链接吗？"
+  },
+  "unbookmarkNotFound": {
+    "message": "未找到对应书签，可能已被删除或移动。"
+  },
+  "unbookmarkFailed": {
+    "message": "取消收藏失败："
   },
   "remove": {
     "message": "移除"

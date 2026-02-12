@@ -2,6 +2,11 @@ import { initI18n, t, applyUITranslations } from '../utils/i18n.js';
 import { log, error } from '../utils/logger.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
+  // Apply theme first
+  chrome.storage.sync.get({ theme: 'auto' }, (items) => {
+      applyTheme(items.theme);
+  });
+  
   await initI18n();
   applyUITranslations();
   loadHistory();

@@ -203,6 +203,21 @@
   "language": {
     "message": "Display Language"
   },
+  "appearanceSettings": {
+    "message": "Appearance"
+  },
+  "theme": {
+    "message": "Theme"
+  },
+  "themeAuto": {
+    "message": "System"
+  },
+  "themeLight": {
+    "message": "Light"
+  },
+  "themeDark": {
+    "message": "Dark"
+  },
   "langZh": {
     "message": "Simplified Chinese"
   },
@@ -223,6 +238,18 @@
   },
   "confirmClearHistory": {
     "message": "Are you sure you want to clear all history records?"
+  },
+  "unbookmark": {
+    "message": "Unbookmark"
+  },
+  "confirmUnbookmark": {
+    "message": "Remove this bookmark?"
+  },
+  "unbookmarkNotFound": {
+    "message": "Bookmark not found. It may have been removed or moved."
+  },
+  "unbookmarkFailed": {
+    "message": "Failed to remove bookmark: "
   },
   "remove": {
     "message": "Remove"

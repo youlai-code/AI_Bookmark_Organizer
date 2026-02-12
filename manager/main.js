@@ -3,6 +3,11 @@ import { initI18n, t } from '../utils/i18n.js';
 let contextMenuTargetNode = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
+  // Apply theme first
+  chrome.storage.sync.get({ theme: 'auto' }, (items) => {
+      applyTheme(items.theme);
+  });
+  
   await initI18n();
   applyTranslations();
   loadBookmarksTree();

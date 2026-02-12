@@ -38,6 +38,22 @@
   transform: scale(1.1);
 }
 
+/* Dark Mode Style for Floating Button */
+#aibook-floating-btn.aibook-dark-mode {
+  background-color: #2d333b; /* Dark grey */
+  border-color: #444c56;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+#aibook-floating-btn.aibook-dark-mode:hover {
+  background-color: #373e47;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+/* Invert icon in dark mode if needed (or keep as is if it looks good) */
+/* Assuming the PNG icon is blue/colorful, it might pop well on dark bg. */
+/* If the icon is black, we need filter: invert(1); */
+
 /* Loading Animation - Ripple/Pulse effect */
 .aibook-loading {
   animation: aibook-pulse 1.5s infinite;

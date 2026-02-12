@@ -165,6 +165,8 @@ class SmartBookmarker {
     const { category, title: newTitle } = classification;
     const folderId = await createOrGetFolder(category);
 
+    let finalBookmarkId = bookmarkId;
+
     // If updating an existing bookmark object (from onCreated)
     if (bookmarkId) {
       await moveBookmark(bookmarkId, folderId);
@@ -177,17 +179,19 @@ class SmartBookmarker {
       const existing = await this.findBookmarkByUrl(url);
       if (existing) {
         await moveBookmark(existing.id, folderId);
+        finalBookmarkId = existing.id;
         if (newTitle && newTitle !== existing.title) {
           await chrome.bookmarks.update(existing.id, { title: newTitle });
         }
       } else {
         // Mark as recently processed to avoid onCreated loop
         this.recentlyProcessedUrls.add(url);
-        await chrome.bookmarks.create({
+        const created = await chrome.bookmarks.create({
           parentId: folderId,
           title: newTitle || originalTitle,
           url: url
         });
+        finalBookmarkId = created?.id;
         // Cleanup cache after 10s
         setTimeout(() => this.recentlyProcessedUrls.delete(url), 10000);
       }
@@ -197,7 +201,8 @@ class SmartBookmarker {
     await addHistoryItem({ 
       title: newTitle || originalTitle, 
       url, 
-      category 
+      category,
+      bookmarkId: finalBookmarkId
     });
   }
 

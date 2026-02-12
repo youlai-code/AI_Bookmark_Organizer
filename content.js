@@ -85,6 +85,54 @@ async function createFloatingButton() {
 
   // 启用拖动
   makeDraggable(btn);
+  
+  // Apply auto theme
+  applyAutoTheme(btn);
+}
+
+// Auto Theme Detection and Application
+function applyAutoTheme(btn) {
+  const updateTheme = () => {
+    // Check for dark mode
+    // 1. Media Query
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    // 2. Computed background color brightness (simplified check)
+    // Get body background color
+    let isDarkBg = false;
+    try {
+        const bgColor = window.getComputedStyle(document.body).backgroundColor;
+        const rgb = bgColor.match(/\d+/g);
+        if (rgb) {
+            const brightness = Math.round(((parseInt(rgb[0]) * 299) + (parseInt(rgb[1]) * 587) + (parseInt(rgb[2]) * 114)) / 1000);
+            if (brightness < 128) { // Standard threshold is 128
+                isDarkBg = true;
+            }
+        }
+    } catch(e) {}
+    
+    // Determine final theme: prefer computed bg, fallback to media query
+    const isDark = isDarkBg || prefersDark;
+    
+    if (isDark) {
+        btn.classList.add('aibook-dark-mode');
+    } else {
+        btn.classList.remove('aibook-dark-mode');
+    }
+  };
+  
+  // Initial check
+  updateTheme();
+  
+  // Listen for changes
+  if (window.matchMedia) {
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateTheme);
+  }
+  
+  // Observer for body class changes (often used by sites to toggle theme)
+  const observer = new MutationObserver(updateTheme);
+  observer.observe(document.body, { attributes: true, attributeFilter: ['class', 'style'] });
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'style', 'data-theme'] });
 }
 
 // 拖动逻辑
