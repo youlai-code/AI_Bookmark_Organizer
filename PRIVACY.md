@@ -122,4 +122,4 @@ If you have any questions about this Privacy Policy, please contact us via the C
 我们可能会不时更新本隐私政策。任何变更都将发布在此页面上。
 
 ### 7. 联系我们
-如果您对本隐私政策有任何疑问，请通过 Chrome 应用商店的支持页面与我们联系。
+如果您对本隐私政策有任何疑问，请发送邮件至：tenb68@126.com

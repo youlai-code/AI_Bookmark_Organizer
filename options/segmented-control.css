@@ -41,6 +41,6 @@
 
 .segmented-control input[type="radio"]:checked + label {
   background-color: #e8f0fe;
-  color: #1967d2;
+  color: #4D6BFE;
   font-weight: 600;
 }

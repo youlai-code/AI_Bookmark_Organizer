@@ -65,13 +65,13 @@
 }
 
 #aibook-floating-btn:hover svg {
-  fill: #1a73e8; /* 悬停变蓝 */
+  fill: #4D6BFE;
 }
 
 /* 加载动画 */
 .aibook-loading {
   animation: aibook-spin 1s linear infinite;
-  fill: #1a73e8 !important;
+  fill: #4D6BFE !important;
 }
 
 @keyframes aibook-spin {

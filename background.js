@@ -117,7 +117,7 @@ class SmartBookmarker {
   async classify(title, url, content) {
     try {
       let { allowNewFolders, folderCreationLevel, enableSmartRename } = await chrome.storage.sync.get({ 
-        allowNewFolders: true, 
+        allowNewFolders: false, 
         folderCreationLevel: 'weak',
         enableSmartRename: false 
       });

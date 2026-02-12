@@ -217,7 +217,7 @@ function restoreOptions() {
         model: '', 
         baseUrl: OFFICIAL_PROXY,
         ollamaHost: '', 
-        allowNewFolders: true, 
+        allowNewFolders: false, 
         folderCreationLevel: 'weak',
         enableSmartRename: false, 
         showFloatingButton: true,
@@ -248,11 +248,21 @@ function restoreOptions() {
       } else if (typeof items.allowNewFolders === 'boolean') {
         // Was true/false
         allowAI = items.allowNewFolders;
-        level = 'medium'; // Legacy default was balanced
+        level = items.folderCreationLevel || 'medium'; // Prefer stored level; legacy default was balanced
       } else {
         // New structure
         allowAI = items.allowNewFolders;
         level = items.folderCreationLevel || 'weak';
+      }
+
+      if (level !== 'off' && !['weak', 'medium', 'strong'].includes(level)) {
+        level = 'weak';
+      }
+
+      if (typeof items.allowNewFolders === 'string') {
+        chrome.storage.sync.set({ allowNewFolders: allowAI, folderCreationLevel: level }, () => {});
+      } else if (typeof items.allowNewFolders === 'boolean' && !items.folderCreationLevel && allowAI) {
+        chrome.storage.sync.set({ folderCreationLevel: level }, () => {});
       }
 
       document.getElementById('allowNewFolders').checked = allowAI;
