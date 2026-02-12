@@ -1,4 +1,65 @@
-const OFFICIAL_PROXY = 'https://aibookmark.tenb68.workers.dev';
+import { t } from './i18n.js';
+
+const OFFICIAL_PROXY = 'https://youlainote.cloud';
+const DEFAULT_TIMEOUT = 30000; // 30 seconds (increased from 15s)
+const MAX_RETRIES = 2; // Maximum retry attempts
+const RETRY_DELAY = 1000; // 1 second delay between retries
+
+async function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function fetchWithTimeout(resource, options = {}) {
+  const { timeout = DEFAULT_TIMEOUT } = options;
+  
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  
+  try {
+    const response = await fetch(resource, {
+      ...options,
+      signal: controller.signal  
+    });
+    clearTimeout(id);
+    return response;
+  } catch (error) {
+    clearTimeout(id);
+    if (error.name === 'AbortError') {
+      throw new Error(t('errorTimeout') || '请求超时，请稍后重试');
+    }
+    throw error;
+  }
+}
+
+async function fetchWithRetry(resource, options = {}, retries = MAX_RETRIES) {
+  let lastError;
+  
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      console.log(`API请求尝试 ${attempt + 1}/${retries + 1}:`, resource);
+      const response = await fetchWithTimeout(resource, options);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+      
+      return response;
+    } catch (error) {
+      lastError = error;
+      console.warn(`API请求失败 (尝试 ${attempt + 1}/${retries + 1}):`, error.message);
+      
+      // 如果是最后一次尝试，不再等待
+      if (attempt < retries) {
+        const delay = RETRY_DELAY * (attempt + 1); // Exponential backoff
+        console.log(`等待 ${delay}ms 后重试...`);
+        await sleep(delay);
+      }
+    }
+  }
+  
+  throw lastError;
+}
 
 export async function classifyWithLLM(title, url, content, existingFolders = [], allowNewFolders = true, enableRename = false) {
   const config = await chrome.storage.sync.get(['llmProvider', 'apiKey', 'model', 'ollamaHost', 'baseUrl', 'language']);
@@ -74,12 +135,15 @@ URL: ${url}
   
   try {
     if (config.llmProvider === 'default') {
-       // 使用默认代理 (DeepSeek via Worker)
-       resultText = await callDeepSeek(prompt, '', config.model, OFFICIAL_PROXY);
-    } else if (config.llmProvider === 'deepseek') {
-      // 用户界面已隐藏 Base URL，强制使用官方默认地址 (避免读取到其他 Provider 设置的 Base URL)
-      resultText = await callDeepSeek(prompt, config.apiKey, config.model, null);
-    } else if (config.llmProvider === 'chatgpt') {
+     // 使用默认代理 (DeepSeek via Worker)
+     resultText = await callDeepSeek(prompt, '', config.model, OFFICIAL_PROXY);
+  } else if (config.llmProvider === 'deepseek') {
+    // 即使是直连模式，如果用户未配置 baseUrl，我们也不应强制传 null，
+    // 而是传 undefined 让 callDeepSeek 内部处理默认值，
+    // 或者如果 config.baseUrl 为空字符串，也应该传 undefined。
+    const baseUrl = config.baseUrl ? config.baseUrl : undefined;
+    resultText = await callDeepSeek(prompt, config.apiKey, config.model, baseUrl);
+  } else if (config.llmProvider === 'chatgpt') {
       resultText = await callChatGPT(prompt, config.apiKey, config.model, config.baseUrl);
     } else if (config.llmProvider === 'gemini') {
       resultText = await callGemini(prompt, config.apiKey, config.model);
@@ -146,8 +210,8 @@ async function callDeepSeek(prompt, apiKey, model, baseUrl) {
     : (apiEndpoint.endsWith('/') ? apiEndpoint + 'chat/completions' : apiEndpoint + '/chat/completions');
 
   console.log('Calling DeepSeek API at:', finalUrl);
-
-  const response = await fetch(finalUrl, {
+  
+  const response = await fetchWithRetry(finalUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -160,11 +224,6 @@ async function callDeepSeek(prompt, apiKey, model, baseUrl) {
     })
   });
   
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`DeepSeek API Error: ${response.status} ${errorText}`);
-  }
-
   const data = await response.json();
   return data.choices[0].message.content.trim();
 }
@@ -177,7 +236,7 @@ async function callChatGPT(prompt, apiKey, model, baseUrl) {
     ? apiEndpoint 
     : (apiEndpoint.endsWith('/') ? apiEndpoint + 'chat/completions' : apiEndpoint + '/chat/completions');
 
-  const response = await fetch(finalUrl, {
+  const response = await fetchWithRetry(finalUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -190,11 +249,6 @@ async function callChatGPT(prompt, apiKey, model, baseUrl) {
     })
   });
   
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`ChatGPT API Error: ${response.status} ${errorText}`);
-  }
-
   const data = await response.json();
   return data.choices[0].message.content.trim();
 }
@@ -203,7 +257,7 @@ async function callGemini(prompt, apiKey, model) {
   const modelName = model || 'gemini-1.5-flash';
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
   
-  const response = await fetch(url, {
+  const response = await fetchWithRetry(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -212,11 +266,6 @@ async function callGemini(prompt, apiKey, model) {
       }]
     })
   });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Gemini API Error: ${response.status} ${errorText}`);
-  }
 
   const data = await response.json();
   // Gemini response structure: candidates[0].content.parts[0].text
@@ -232,7 +281,7 @@ async function callDoubao(prompt, apiKey, model) {
       throw new Error('使用豆包需要配置 Model (Endpoint ID)');
   }
 
-  const response = await fetch('https://ark.cn-beijing.volces.com/api/v3/chat/completions', {
+  const response = await fetchWithRetry('https://ark.cn-beijing.volces.com/api/v3/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -245,11 +294,6 @@ async function callDoubao(prompt, apiKey, model) {
     })
   });
   
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Doubao API Error: ${response.status} ${errorText}`);
-  }
-
   const data = await response.json();
   return data.choices[0].message.content.trim();
 }
@@ -259,7 +303,7 @@ async function callOllama(prompt, model, host) {
   const apiHost = host || 'http://localhost:11434';
   
   // Ollama generate API
-  const response = await fetch(`${apiHost}/api/generate`, {
+  const response = await fetchWithRetry(`${apiHost}/api/generate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -268,10 +312,6 @@ async function callOllama(prompt, model, host) {
       stream: false
     })
   });
-
-  if (!response.ok) {
-    throw new Error(`Ollama Error: ${response.status}`);
-  }
 
   const data = await response.json();
   return data.response.trim();
@@ -306,14 +346,25 @@ async function setupOffscreenDocument() {
 }
 
 async function callChromeBuiltInAI(prompt) {
+  const AI_TIMEOUT = 60000; // 60 seconds for Chrome Built-in AI
+  
   try {
     await setupOffscreenDocument();
     
-    const response = await chrome.runtime.sendMessage({
+    // Create a timeout promise
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Chrome Built-in AI 响应超时，请稍后重试')), AI_TIMEOUT);
+    });
+    
+    // Create the actual request promise
+    const requestPromise = chrome.runtime.sendMessage({
       type: 'PROMPT_AI',
       target: 'offscreen',
       prompt: prompt
     });
+    
+    // Race between the request and timeout
+    const response = await Promise.race([requestPromise, timeoutPromise]);
 
     if (response && response.error) {
       throw new Error(response.error);
@@ -326,6 +377,9 @@ async function callChromeBuiltInAI(prompt) {
     throw new Error('Unknown error from Chrome AI');
   } catch (e) {
     console.error('Chrome AI Call Failed:', e);
+    if (e.message.includes('超时')) {
+      throw e; // Re-throw timeout errors as-is
+    }
     throw new Error('Chrome Built-in AI 调用失败，请确保浏览器版本支持并已开启相关功能: ' + e.message);
   }
 }

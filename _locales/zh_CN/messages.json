@@ -231,6 +231,9 @@
   "errorNoTab": {
     "message": "无法获取当前标签页"
   },
+  "errorTimeout": {
+    "message": "网络请求超时。如果您在中国境内，可能需要开启网络加速服务（VPN）。"
+  },
   "bookmarkedSuccess": {
     "message": "已收藏: $CATEGORY$",
     "placeholders": {

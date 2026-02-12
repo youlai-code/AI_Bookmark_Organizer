@@ -103,7 +103,12 @@ async function handleManualTrigger(tabId, url, title) {
             newTitle = result.title;
             
         } catch (error) {
-            console.warn('LLM分类失败，使用默认分类:', error);
+            console.warn('LLM分类失败:', error);
+            // 如果是超时错误，直接抛出，不再降级到默认分类
+            if (error.message.includes('超时') || error.message.includes('timed out')) {
+                throw error;
+            }
+            // 其他错误降级处理
             category = t('defaultFolder');
         }
         

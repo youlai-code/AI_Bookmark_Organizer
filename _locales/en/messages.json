@@ -231,6 +231,9 @@
   "errorNoTab": {
     "message": "Could not get current tab"
   },
+  "errorTimeout": {
+    "message": "Network request timed out. If you are in China, you may need to use a network accelerator (VPN)."
+  },
   "bookmarkedSuccess": {
     "message": "Bookmarked: $CATEGORY$",
     "placeholders": {
