@@ -192,7 +192,7 @@
     "message": "AI Smart Bookmark (Left-click to bookmark, hold to drag, right-click menu)"
   },
   "confirmHideFloatingBtn": {
-    "message": "🚫 Hide floating bookmark button on this site?\n\nYou can restore it in the extension settings page."
+    "message": "Hide floating bookmark button on this site?\n\nYou can restore it in the extension settings page."
   },
   "hideSuccess": {
     "message": "Hidden. Can be restored in settings."
@@ -276,7 +276,7 @@
     "message": "Failed: "
   },
   "toastAnalyzing": {
-    "message": "🤖 Analyzing and bookmarking..."
+    "message": "Analyzing and bookmarking..."
   },
   "toastAutoBookmarked": {
     "message": "Auto classified to: $CATEGORY$",

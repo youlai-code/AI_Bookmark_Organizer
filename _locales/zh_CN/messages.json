@@ -198,7 +198,7 @@
     "message": "AI 智能收藏 (左键收藏，按住拖动，右键菜单)"
   },
   "confirmHideFloatingBtn": {
-    "message": "🚫 是否要在当前网站隐藏悬浮收藏按钮？\n\n隐藏后，您可以在插件设置页面中恢复显示。"
+    "message": "是否要在当前网站隐藏悬浮收藏按钮？\n\n隐藏后，您可以在插件设置页面中恢复显示。"
   },
   "hideSuccess": {
     "message": "已隐藏。可在插件设置中恢复。"
@@ -282,7 +282,7 @@
     "message": "失败: "
   },
   "toastAnalyzing": {
-    "message": "🤖 正在分析并收藏..."
+    "message": "正在分析并收藏..."
   },
   "toastAutoBookmarked": {
     "message": "自动归类到: $CATEGORY$",
