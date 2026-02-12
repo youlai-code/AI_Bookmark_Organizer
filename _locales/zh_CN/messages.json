@@ -1,4 +1,10 @@
 {
+  "searchPlaceholder": {
+    "message": "搜索书签..."
+  },
+  "managerTitle": {
+    "message": "AIBook 书签管理器"
+  },
   "appName": {
     "message": "AIBook - 智能书签分类器"
   },

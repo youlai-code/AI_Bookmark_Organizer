@@ -23,6 +23,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // Search functionality
   document.getElementById('search').addEventListener('input', handleSearch);
+
+  // Listen for language changes
+  window.addEventListener('i18nChanged', () => {
+    applyTranslations();
+    // Re-render tree if needed (though tree content comes from bookmarks API, 
+    // context menu labels are static HTML, so applyTranslations covers them.
+    // If tree nodes have static text (like 'Untitled Folder'), we might need to re-render.
+    loadBookmarksTree(); 
+  });
 });
 
 function applyTranslations() {

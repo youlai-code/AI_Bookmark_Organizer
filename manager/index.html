@@ -8,25 +8,16 @@
 </head>
 <body>
   <div class="app-container">
-    <div class="sidebar">
-      <div class="header-area">
-        <div class="logo">AIBook Manager</div>
-      </div>
-      <div class="search-box">
-        <input type="text" id="search" placeholder="搜索书签..." data-i18n-placeholder="searchPlaceholder">
-      </div>
-      <div class="tree-container">
-        <div id="bookmarkTree" class="tree-view">
-          <!-- Tree rendered here -->
-        </div>
-      </div>
+    <div class="header-area">
+      <div class="logo" data-i18n="managerTitle">AIBook Manager</div>
     </div>
-    <div class="content">
-      <div id="emptyState" class="empty-state">
-        <h1 data-i18n="managerWelcome">欢迎使用 AIBook 书签管理器</h1>
-        <p data-i18n="managerSelectHint">请从左侧选择一个书签或文件夹进行查看和编辑。</p>
+    <div class="search-box">
+      <input type="text" id="search" placeholder="搜索书签..." data-i18n-placeholder="searchPlaceholder">
+    </div>
+    <div class="tree-container">
+      <div id="bookmarkTree" class="tree-view">
+        <!-- Tree rendered here -->
       </div>
-      <!-- Detail view will be injected here -->
     </div>
   </div>
 
