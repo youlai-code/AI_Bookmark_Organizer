@@ -221,7 +221,7 @@ function restoreOptions() {
         ollamaHost: '', 
         allowNewFolders: false, 
         folderCreationLevel: 'weak',
-        enableSmartRename: false, 
+        enableSmartRename: true, 
         showFloatingButton: true,
         language: 'zh_CN',
         theme: 'auto',

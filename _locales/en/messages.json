@@ -8,6 +8,9 @@
   "appDesc": {
     "message": "Organize and categorize bookmarks into folders with AI"
   },
+  "searchPlaceholder": {
+    "message": "Search bookmarks..."
+  },
   "managerTitle": {
     "message": "AI Bookmark Organizer · Bookmark Tree"
   },
@@ -19,6 +22,9 @@
   },
   "navHistory": {
     "message": "History"
+  },
+  "navManager": {
+    "message": "Bookmark Manager"
   },
   "navBookmarks": {
     "message": "Bookmark Tree"
