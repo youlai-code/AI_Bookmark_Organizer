@@ -43,6 +43,8 @@ const I18n = {
     }
 };
 
+const LLM_CONFIG_ERROR_CODE = 'MODEL_NOT_CONFIGURED';
+
 // 创建悬浮按钮 (小巧、右下角、可拖动、右键屏蔽)
 async function createFloatingButton() {
   if (document.getElementById('aibook-floating-btn')) return;
@@ -136,75 +138,193 @@ function applyAutoTheme(btn) {
 }
 
 // 拖动逻辑
-function makeDraggable(element) {
-    let isDragging = false;
-    let startX, startY, initialLeft, initialTop;
-    let hasMoved = false;
+const FLOATING_BTN_MARGIN = 8;
+const DRAG_TRIGGER_DISTANCE = 4;
 
-    element.addEventListener('mousedown', dragStart);
-    
-    // 触摸屏支持
-    element.addEventListener('touchstart', dragStart, { passive: false });
+function clamp(value, min, max) {
+    return Math.min(Math.max(value, min), max);
+}
 
-    function dragStart(e) {
-        if (e.type === 'mousedown' && e.button !== 0) return; // 只允许左键拖动
+function updatePeekOffset(element) {
+    const peekOffset = Math.round(element.offsetWidth / 2);
+    element.style.setProperty('--aibook-peek-offset', `${peekOffset}px`);
+}
 
-        const clientX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
-        const clientY = e.type === 'mousedown' ? e.clientY : e.touches[0].clientY;
+function placeButtonAt(element, left, top) {
+    const maxLeft = Math.max(window.innerWidth - element.offsetWidth, 0);
+    const maxTop = Math.max(window.innerHeight - element.offsetHeight, 0);
 
-        isDragging = true;
-        hasMoved = false;
-        startX = clientX;
-        startY = clientY;
+    const safeLeft = clamp(left, 0, maxLeft);
+    const safeTop = clamp(top, 0, maxTop);
 
-        const rect = element.getBoundingClientRect();
-        // 转换为 fixed 定位的 top/left
-        initialLeft = rect.left;
-        initialTop = rect.top;
+    element.style.left = `${safeLeft}px`;
+    element.style.top = `${safeTop}px`;
+}
 
-        // 移除 bottom/right 属性，改用 top/left 定位以支持自由移动
-        element.style.bottom = 'auto';
-        element.style.right = 'auto';
-        element.style.left = `${initialLeft}px`;
-        element.style.top = `${initialTop}px`;
+function setDockedEdge(element, edge) {
+    if (edge) {
+        element.dataset.docked = edge;
+    } else {
+        delete element.dataset.docked;
+    }
+}
 
-        document.addEventListener('mousemove', drag);
-        document.addEventListener('mouseup', dragEnd);
-        document.addEventListener('touchmove', drag, { passive: false });
-        document.addEventListener('touchend', dragEnd);
+function getCurrentButtonPosition(element) {
+    const styleLeft = Number.parseFloat(element.style.left);
+    const styleTop = Number.parseFloat(element.style.top);
+
+    if (Number.isFinite(styleLeft) && Number.isFinite(styleTop)) {
+        return { left: styleLeft, top: styleTop };
     }
 
-    function drag(e) {
-        if (!isDragging) return;
-        e.preventDefault();
+    const rect = element.getBoundingClientRect();
+    return { left: rect.left, top: rect.top };
+}
 
-        const clientX = e.type === 'mousemove' ? e.clientX : e.touches[0].clientX;
-        const clientY = e.type === 'mousemove' ? e.clientY : e.touches[0].clientY;
+function snapToEdge(element, preferredEdge = null) {
+    updatePeekOffset(element);
 
-        const dx = clientX - startX;
-        const dy = clientY - startY;
+    const width = element.offsetWidth;
+    const height = element.offsetHeight;
+    const maxLeft = Math.max(window.innerWidth - width, 0);
+    const maxTop = Math.max(window.innerHeight - height, 0);
 
-        // 只有移动超过一定距离才算拖动，避免微小抖动影响点击
-        if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
-            hasMoved = true;
-            element.dataset.isDragging = 'true'; // 标记正在拖动
+    const position = getCurrentButtonPosition(element);
+    let left = clamp(position.left, 0, maxLeft);
+    let top = clamp(position.top, 0, maxTop);
+
+    const distances = {
+        left,
+        right: Math.max(maxLeft - left, 0),
+        top,
+        bottom: Math.max(maxTop - top, 0)
+    };
+
+    const edge = preferredEdge || Object.keys(distances).reduce((nearest, candidate) => {
+        return distances[candidate] < distances[nearest] ? candidate : nearest;
+    }, 'left');
+
+    if (edge === 'left') {
+        left = FLOATING_BTN_MARGIN;
+    } else if (edge === 'right') {
+        left = Math.max(maxLeft - FLOATING_BTN_MARGIN, 0);
+    } else if (edge === 'top') {
+        top = FLOATING_BTN_MARGIN;
+    } else if (edge === 'bottom') {
+        top = Math.max(maxTop - FLOATING_BTN_MARGIN, 0);
+    }
+
+    placeButtonAt(element, left, top);
+    setDockedEdge(element, edge);
+}
+
+function makeDraggable(element) {
+    const dragState = {
+        isDragging: false,
+        hasMoved: false,
+        pointerId: null,
+        startX: 0,
+        startY: 0,
+        initialLeft: 0,
+        initialTop: 0,
+        previousDock: null,
+        pendingLeft: null,
+        pendingTop: null,
+        frameId: 0
+    };
+
+    element.dataset.isDragging = 'false';
+    placeButtonAt(
+        element,
+        Math.max(window.innerWidth - element.offsetWidth - FLOATING_BTN_MARGIN, 0),
+        Math.max(window.innerHeight - element.offsetHeight - 20, 0)
+    );
+    snapToEdge(element, 'right');
+
+    element.addEventListener('pointerdown', onPointerDown);
+    element.addEventListener('pointermove', onPointerMove);
+    element.addEventListener('pointerup', onPointerUp);
+    element.addEventListener('pointercancel', onPointerUp);
+
+    window.addEventListener('resize', () => {
+        if (dragState.isDragging) return;
+        const preferredEdge = element.dataset.docked || null;
+        snapToEdge(element, preferredEdge);
+    });
+
+    function queueMove(left, top) {
+        dragState.pendingLeft = left;
+        dragState.pendingTop = top;
+
+        if (dragState.frameId) return;
+
+        dragState.frameId = window.requestAnimationFrame(() => {
+            placeButtonAt(element, dragState.pendingLeft, dragState.pendingTop);
+            dragState.frameId = 0;
+        });
+    }
+
+    function onPointerDown(e) {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+        const currentPosition = getCurrentButtonPosition(element);
+
+        dragState.isDragging = true;
+        dragState.hasMoved = false;
+        dragState.pointerId = e.pointerId;
+        dragState.startX = e.clientX;
+        dragState.startY = e.clientY;
+        dragState.initialLeft = currentPosition.left;
+        dragState.initialTop = currentPosition.top;
+        dragState.previousDock = element.dataset.docked || null;
+
+        element.classList.add('aibook-dragging');
+        setDockedEdge(element, null);
+        element.setPointerCapture(e.pointerId);
+    }
+
+    function onPointerMove(e) {
+        if (!dragState.isDragging || e.pointerId !== dragState.pointerId) return;
+
+        const dx = e.clientX - dragState.startX;
+        const dy = e.clientY - dragState.startY;
+
+        if (Math.abs(dx) > DRAG_TRIGGER_DISTANCE || Math.abs(dy) > DRAG_TRIGGER_DISTANCE) {
+            dragState.hasMoved = true;
+            element.dataset.isDragging = 'true';
         }
 
-        element.style.left = `${initialLeft + dx}px`;
-        element.style.top = `${initialTop + dy}px`;
+        queueMove(dragState.initialLeft + dx, dragState.initialTop + dy);
+        e.preventDefault();
     }
 
-    function dragEnd() {
-        isDragging = false;
-        document.removeEventListener('mousemove', drag);
-        document.removeEventListener('mouseup', dragEnd);
-        document.removeEventListener('touchmove', drag);
-        document.removeEventListener('touchend', dragEnd);
+    function onPointerUp(e) {
+        if (!dragState.isDragging || e.pointerId !== dragState.pointerId) return;
 
-        // 如果没有移动，清除拖动标记，允许 click 事件触发
-        if (!hasMoved) {
+        dragState.isDragging = false;
+        element.classList.remove('aibook-dragging');
+
+        if (dragState.frameId) {
+            window.cancelAnimationFrame(dragState.frameId);
+            placeButtonAt(element, dragState.pendingLeft, dragState.pendingTop);
+            dragState.frameId = 0;
+        }
+
+        if (dragState.hasMoved) {
+            snapToEdge(element);
+        } else {
+            if (dragState.previousDock) {
+                snapToEdge(element, dragState.previousDock);
+            }
             element.dataset.isDragging = 'false';
         }
+
+        if (element.hasPointerCapture(e.pointerId)) {
+            element.releasePointerCapture(e.pointerId);
+        }
+
+        dragState.pointerId = null;
+        dragState.previousDock = null;
     }
 }
 
@@ -335,6 +455,9 @@ async function handleBookmark() {
           btn.classList.remove('aibook-success');
       }, 2000);
     } else {
+      if (response?.errorCode === LLM_CONFIG_ERROR_CODE) {
+        alert(response.error || I18n.t('errorModelNotConfigured') || 'AI model is not configured.');
+      }
       throw new Error(response.error || '未知错误');
     }
     

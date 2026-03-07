@@ -1,11 +1,11 @@
-/* 悬浮收藏按钮 (右下角小浮标) */
+/* Floating bookmark button */
 #aibook-floating-btn {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 40px; /* 稍微加大一点以适应PNG */
+  top: 20px;
+  left: 20px;
+  width: 40px;
   height: 40px;
-  background-color: #F0F3F8; /* 亮中性色 */
+  background-color: #f0f3f8;
   border: 1px solid #d0d7de;
   border-radius: 50%;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -14,10 +14,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: opacity 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
   opacity: 0.8;
   user-select: none;
-  overflow: hidden; /* 防止图片溢出圆角 */
+  overflow: hidden;
+  touch-action: none;
+  --aibook-peek-offset: 20px;
+  --aibook-dock-x: 0px;
+  --aibook-dock-y: 0px;
+  --aibook-scale: 1;
+  transform: translate3d(var(--aibook-dock-x), var(--aibook-dock-y), 0) scale(var(--aibook-scale));
+  will-change: transform, left, top;
 }
 
 #aibook-floating-btn img {
@@ -31,16 +38,16 @@
   opacity: 1;
   background-color: #fff;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transform: scale(1.05);
+  --aibook-scale: 1.05;
 }
 
 #aibook-floating-btn:hover img {
   transform: scale(1.1);
 }
 
-/* Dark Mode Style for Floating Button */
+/* Dark mode style */
 #aibook-floating-btn.aibook-dark-mode {
-  background-color: #2d333b; /* Dark grey */
+  background-color: #2d333b;
   border-color: #444c56;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
@@ -50,14 +57,40 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
-/* Invert icon in dark mode if needed (or keep as is if it looks good) */
-/* Assuming the PNG icon is blue/colorful, it might pop well on dark bg. */
-/* If the icon is black, we need filter: invert(1); */
+/* Edge dock behavior */
+#aibook-floating-btn[data-docked="left"] {
+  --aibook-dock-x: calc(-1 * var(--aibook-peek-offset));
+}
 
-/* Loading Animation - Ripple/Pulse effect */
+#aibook-floating-btn[data-docked="right"] {
+  --aibook-dock-x: var(--aibook-peek-offset);
+}
+
+#aibook-floating-btn[data-docked="top"] {
+  --aibook-dock-y: calc(-1 * var(--aibook-peek-offset));
+}
+
+#aibook-floating-btn[data-docked="bottom"] {
+  --aibook-dock-y: var(--aibook-peek-offset);
+}
+
+#aibook-floating-btn[data-docked]:hover {
+  --aibook-dock-x: 0px;
+  --aibook-dock-y: 0px;
+}
+
+#aibook-floating-btn.aibook-dragging {
+  transition: none !important;
+  cursor: grabbing;
+  --aibook-scale: 1;
+  --aibook-dock-x: 0px;
+  --aibook-dock-y: 0px;
+}
+
+/* Loading animation */
 .aibook-loading {
   animation: aibook-pulse 1.5s infinite;
-  border-color: #4D6BFE !important;
+  border-color: #4d6bfe !important;
 }
 
 .aibook-loading img {
@@ -76,7 +109,7 @@
   }
 }
 
-/* Success Animation */
+/* Success animation */
 .aibook-success {
   background-color: #e6ffed !important;
   border-color: #188038 !important;
@@ -87,12 +120,13 @@
 }
 
 /* Clean up old SVG styles */
-#aibook-floating-btn svg { display: none; }
+#aibook-floating-btn svg {
+  display: none;
+}
 
-/* Toast 提示 */
+/* Toast message */
 #aibook-toast {
   position: fixed;
-  /* 位置由 JS 动态控制 */
   background-color: #333;
   color: white;
   padding: 10px 16px;
@@ -104,9 +138,9 @@
   transform: translateY(10px);
   transition: opacity 0.3s, transform 0.3s;
   pointer-events: none;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   max-width: 280px;
-  white-space: nowrap; /* 防止文字换行导致位置计算突变，除非太长 */
+  white-space: nowrap;
 }
 
 #aibook-toast.show {

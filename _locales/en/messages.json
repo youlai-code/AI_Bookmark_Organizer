@@ -125,6 +125,12 @@
   "enableSmartRenameHint": {
     "message": "AI will automatically simplify long titles (e.g., \"Bilibili (゜-゜)つロ Cheers~-bilibili\" -> \"Bilibili\")."
   },
+  "renameMaxLength": {
+    "message": "Max Chinese Title Length"
+  },
+  "renameMaxLengthHint": {
+    "message": "Chinese title range is 4-20. Non-Chinese titles are relaxed automatically (about 2x), with local truncation guard."
+  },
   "sectionBlockedMgmt": {
     "message": "Block Management"
   },
@@ -154,6 +160,117 @@
   },
   "ctxDelete": {
     "message": "Delete"
+  },
+  "selectionSummary": {
+    "message": "$COUNT$ selected",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "selectAll": {
+    "message": "Select"
+  },
+  "clearSelection": {
+    "message": "Clear"
+  },
+  "deleteSelected": {
+    "message": "Delete Selected"
+  },
+  "bulkRenameSelected": {
+    "message": "Rename"
+  },
+  "bulkClassifySelected": {
+    "message": "Classify"
+  },
+  "checkInvalidSelected": {
+    "message": "Check Dead Links"
+  },
+  "deleteSelectedBookmarks": {
+    "message": "Delete"
+  },
+  "bulkActionRunning": {
+    "message": "Running bulk action..."
+  },
+  "bulkActionFailed": {
+    "message": "Bulk action failed: "
+  },
+  "bulkNoBookmarksSelected": {
+    "message": "Select at least one bookmark first."
+  },
+  "confirmDeleteSelectedBookmarks": {
+    "message": "Delete $COUNT$ selected bookmarks?",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bulkDeleteDone": {
+    "message": "Deleted $COUNT$ bookmarks.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "confirmBulkRename": {
+    "message": "Bulk rename $COUNT$ selected bookmarks?",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bulkRenameDone": {
+    "message": "Bulk rename complete: $SUCCESS$ succeeded, $FAILED$ failed.",
+    "placeholders": {
+      "success": {
+        "content": "$1"
+      },
+      "failed": {
+        "content": "$2"
+      }
+    }
+  },
+  "confirmBulkClassify": {
+    "message": "Bulk classify $COUNT$ selected bookmarks?",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bulkClassifyDone": {
+    "message": "Bulk classify complete: $SUCCESS$ succeeded, $FAILED$ failed.",
+    "placeholders": {
+      "success": {
+        "content": "$1"
+      },
+      "failed": {
+        "content": "$2"
+      }
+    }
+  },
+  "bulkCheckInvalidDone": {
+    "message": "Dead-link check done: $INVALID$ suspicious out of $TOTAL$.",
+    "placeholders": {
+      "invalid": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "confirmDeleteSelected": {
+    "message": "Delete the selected $COUNT$ items?",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   },
   "modalEditTitle": {
     "message": "Edit Bookmark"
@@ -294,6 +411,25 @@
   "errorTimeout": {
     "message": "Network request timed out. If you are in China, you may need to use a network accelerator (VPN)."
   },
+  "errorModelNotConfigured": {
+    "message": "AI model is not configured. Please complete settings before sending requests."
+  },
+  "errorApiKeyRequired": {
+    "message": "AI provider \"$PROVIDER$\" is not configured. Please set API Key in Settings.",
+    "placeholders": {
+      "provider": {
+        "content": "$1"
+      }
+    }
+  },
+  "errorModelIdRequired": {
+    "message": "AI provider \"$PROVIDER$\" is not configured. Please set Model / Endpoint ID in Settings.",
+    "placeholders": {
+      "provider": {
+        "content": "$1"
+      }
+    }
+  },
   "bookmarkedSuccess": {
     "message": "Bookmarked: $CATEGORY$",
     "placeholders": {
@@ -314,7 +450,9 @@
   "toastAutoBookmarked": {
     "message": "Auto classified to: $CATEGORY$",
     "placeholders": {
-      "category": { "content": "$1" }
+      "category": {
+        "content": "$1"
+      }
     }
   },
   "toastExtractionFailed": {
@@ -322,5 +460,261 @@
   },
   "defaultFolder": {
     "message": "Default"
+  },
+  "bulkActionLabelRename": {
+    "message": "Rename"
+  },
+  "bulkActionLabelClassify": {
+    "message": "Classify"
+  },
+  "bulkActionLabelCheck": {
+    "message": "Check"
+  },
+  "bulkActionLabelDelete": {
+    "message": "Delete"
+  },
+  "bulkActionLabelDefault": {
+    "message": "Bulk"
+  },
+  "bulkPhaseAnalyze": {
+    "message": " analyzing"
+  },
+  "bulkPhaseCheck": {
+    "message": " checking"
+  },
+  "bulkPhaseApply": {
+    "message": " applying"
+  },
+  "bulkPhaseDone": {
+    "message": " done"
+  },
+  "bulkPhaseRunning": {
+    "message": " running"
+  },
+  "bulkReviewDefaultTitle": {
+    "message": "Batch action review"
+  },
+  "bulkReviewNoRows": {
+    "message": "No items to display."
+  },
+  "bulkReviewConfirm": {
+    "message": "Confirm"
+  },
+  "bulkReviewOk": {
+    "message": "OK"
+  },
+  "bulkReviewApply": {
+    "message": "Apply"
+  },
+  "bulkReviewNoSelection": {
+    "message": "No changes selected."
+  },
+  "bulkReviewOmittedTitle": {
+    "message": "More items omitted"
+  },
+  "bulkReviewOmittedDetail": {
+    "message": "...and $COUNT$ more items",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bulkReviewSelectAll": {
+    "message": "All"
+  },
+  "bulkReviewSelectNone": {
+    "message": "None"
+  },
+  "bulkReviewSelectedCount": {
+    "message": "Selected $SELECTED$/$TOTAL$",
+    "placeholders": {
+      "selected": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bulkRenameReviewTitle": {
+    "message": "Bulk rename review"
+  },
+  "bulkRenameNothingToApply": {
+    "message": "No valid rename suggestions found."
+  },
+  "bulkRenameAnalysisFailed": {
+    "message": "$FAILED$ bookmarks failed to analyze.",
+    "placeholders": {
+      "failed": {
+        "content": "$1"
+      }
+    }
+  },
+  "bulkRenameNoChange": {
+    "message": "Selected bookmarks do not need renaming."
+  },
+  "bulkRenameReviewDesc": {
+    "message": "Please confirm the AI rename suggestions before applying (all selected by default)."
+  },
+  "bulkRenameReviewSummary": {
+    "message": "$COUNT$ bookmarks will be renamed.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bulkRenameReviewSummaryWithFailed": {
+    "message": "$COUNT$ bookmarks will be renamed, $FAILED$ failed to analyze.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "failed": {
+        "content": "$2"
+      }
+    }
+  },
+  "bulkRenameCancelled": {
+    "message": "Bulk rename cancelled, no changes were applied."
+  },
+  "bulkClassifyReviewTitle": {
+    "message": "Bulk classify review"
+  },
+  "bulkClassifyNothingToApply": {
+    "message": "No category changes are required."
+  },
+  "bulkClassifyAnalysisFailed": {
+    "message": "$FAILED$ bookmarks failed to analyze.",
+    "placeholders": {
+      "failed": {
+        "content": "$1"
+      }
+    }
+  },
+  "bulkClassifyNoChange": {
+    "message": "Selected bookmarks are already in recommended folders."
+  },
+  "bulkClassifyReviewDesc": {
+    "message": "Please confirm the target folders before moving bookmarks (all selected by default)."
+  },
+  "bulkClassifyReviewSummary": {
+    "message": "$COUNT$ bookmarks will be moved.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bulkClassifyReviewSummaryWithFailed": {
+    "message": "$COUNT$ bookmarks will be moved, $FAILED$ failed to analyze.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "failed": {
+        "content": "$2"
+      }
+    }
+  },
+  "bulkClassifyCancelled": {
+    "message": "Bulk classify cancelled, no changes were applied."
+  },
+  "bulkInvalidReviewTitle": {
+    "message": "Dead-link check result"
+  },
+  "bulkInvalidReviewDesc": {
+    "message": "Potential dead links have been highlighted in the tree."
+  },
+  "bulkInvalidReviewDeleteDesc": {
+    "message": "Select the suspicious links to delete directly (all selected by default)."
+  },
+  "bulkInvalidDeleteSelected": {
+    "message": "Delete selected"
+  },
+  "bulkInvalidDeleteCancelled": {
+    "message": "Dead-link deletion cancelled, no changes were applied."
+  },
+  "bulkInvalidDeleteDone": {
+    "message": "Dead-link cleanup complete: $SUCCESS$ deleted, $FAILED$ failed.",
+    "placeholders": {
+      "success": {
+        "content": "$1"
+      },
+      "failed": {
+        "content": "$2"
+      }
+    }
+  },
+  "bulkDailyLimitReached": {
+    "message": "Daily AI request limit reached."
+  },
+  "dailyLimitReached": {
+    "message": "Daily AI request limit reached ($LIMIT$). Please try again tomorrow.",
+    "placeholders": {
+      "limit": {
+        "content": "$1"
+      }
+    }
+  },
+  "dailyQuotaRemaining": {
+    "message": "Today remaining: $REMAINING$/$LIMIT$",
+    "placeholders": {
+      "remaining": {
+        "content": "$1"
+      },
+      "limit": {
+        "content": "$2"
+      }
+    }
+  },
+  "dailyQuotaUnavailable": {
+    "message": "Today remaining: --/$LIMIT$",
+    "placeholders": {
+      "limit": {
+        "content": "$1"
+      }
+    }
+  },
+  "dailyQuotaExternal": {
+    "message": "Quota managed by $PROVIDER$",
+    "placeholders": {
+      "provider": {
+        "content": "$1"
+      }
+    }
+  },
+  "bulkSortTree": {
+    "message": "Sort Tree"
+  },
+  "confirmBulkSortTree": {
+    "message": "Sort selected folders now? Root folder uses bookmark-first; other folders use folder-first."
+  },
+  "bulkSortNoChange": {
+    "message": "Sorting complete: no changes needed."
+  },
+  "bulkSortFailed": {
+    "message": "Sort failed: bookmark tree unavailable."
+  },
+  "bulkSortDone": {
+    "message": "Sorting complete: $MOVED$ items moved, $FAILED$ folders failed (scanned $FOLDERS$ folders).",
+    "placeholders": {
+      "moved": {
+        "content": "$1"
+      },
+      "failed": {
+        "content": "$2"
+      },
+      "folders": {
+        "content": "$3"
+      }
+    }
+  },
+  "bulkActionLabelSort": {
+    "message": "Sort"
+  },
+  "bulkSortNoSelection": {
+    "message": "Please select bookmarks or folders to sort first."
   }
 }

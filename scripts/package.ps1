@@ -1,10 +1,27 @@
+param(
+    [string]$Target = "chrome"
+)
+
 $ErrorActionPreference = 'Stop'
 
 $root = Split-Path -Parent $PSScriptRoot
-$manifestPath = Join-Path $root 'manifest.json'
-if (-not (Test-Path $manifestPath)) {
-  throw "manifest.json not found: $manifestPath"
+
+if ($Target -eq "firefox") {
+    $manifestFile = "manifest.firefox.json"
+    $manifestPath = Join-Path $root $manifestFile
+    if (-not (Test-Path $manifestPath)) {
+        throw "Firefox manifest not found: $manifestPath"
+    }
+} else {
+    $manifestFile = "manifest.json"
+    $manifestPath = Join-Path $root $manifestFile
+    if (-not (Test-Path $manifestPath)) {
+        throw "manifest.json not found: $manifestPath"
+    }
 }
+
+Write-Host "Building for target: $Target"
+Write-Host "Using manifest: $manifestPath"
 
 $manifestRaw = Get-Content -Raw -Encoding utf8 -Path $manifestPath
 
@@ -18,7 +35,7 @@ try {
 }
 
 $outDir = Join-Path $root 'release'
-$stageDir = Join-Path $outDir "staging-$version"
+$stageDir = Join-Path $outDir "staging-$Target-$version"
 
 if (Test-Path $stageDir) {
   Remove-Item -Recurse -Force $stageDir
@@ -26,7 +43,6 @@ if (Test-Path $stageDir) {
 New-Item -ItemType Directory -Force -Path $stageDir | Out-Null
 
 $includePaths = @(
-  'manifest.json',
   'background.js',
   'content.js',
   'content.css',
@@ -35,9 +51,11 @@ $includePaths = @(
   'manager',
   'options',
   'popup',
+  'config',
   'utils'
 )
 
+# Copy common files
 foreach ($rel in $includePaths) {
   $src = Join-Path $root $rel
   if (-not (Test-Path $src)) {
@@ -52,7 +70,10 @@ foreach ($rel in $includePaths) {
   }
 }
 
-$zipName = "AIBook-$version.zip"
+# Copy manifest (renaming to manifest.json if needed)
+Copy-Item -Force -Path $manifestPath -Destination (Join-Path $stageDir 'manifest.json')
+
+$zipName = "AIBook-$Target-$version.zip"
 $zipPath = Join-Path $outDir $zipName
 if (Test-Path $zipPath) {
   Remove-Item -Force $zipPath

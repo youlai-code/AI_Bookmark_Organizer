@@ -1,4 +1,4 @@
-import { classifyWithLLM } from './utils/llm.js';
+import { classifyWithLLM, isLLMConfigError, isLLMDailyLimitError } from './utils/llm.js';
 import { createOrGetFolder, moveBookmark, getExistingFolderNames } from './utils/bookmark.js';
 import { addHistoryItem } from './utils/history.js';
 import { initI18n, t } from './utils/i18n.js';
@@ -64,7 +64,7 @@ class SmartBookmarker {
       if (isManual && tabId) {
         this.notifyStatus(tabId, 'error', error.message);
       }
-      return { success: false, error: error.message };
+      return { success: false, error: error.message, errorCode: error?.code || '' };
 
     } finally {
       this.processingQueue.delete(processId);
@@ -116,10 +116,11 @@ class SmartBookmarker {
   // LLM Classification
   async classify(title, url, content) {
     try {
-      let { allowNewFolders, folderCreationLevel, enableSmartRename } = await chrome.storage.sync.get({ 
+      let { allowNewFolders, folderCreationLevel, enableSmartRename, renameMaxLength } = await chrome.storage.sync.get({ 
         allowNewFolders: false, 
         folderCreationLevel: 'weak',
-        enableSmartRename: false 
+        enableSmartRename: false,
+        renameMaxLength: 12
       });
       
       // Legacy migration logic (same as options.js to ensure consistency)
@@ -149,11 +150,19 @@ class SmartBookmarker {
 
       const existingFolders = await getExistingFolderNames();
       
-      const result = await classifyWithLLM(title, url, content, existingFolders, finalLevel, enableSmartRename);
+      const result = await classifyWithLLM(
+        title,
+        url,
+        content,
+        existingFolders,
+        finalLevel,
+        enableSmartRename,
+        renameMaxLength
+      );
       return result;
     } catch (error) {
       // If critical timeout, rethrow to stop process or handle specifically
-      if (error.message.includes('timeout')) throw error;
+      if (error.message.includes('timeout') || isLLMConfigError(error) || isLLMDailyLimitError(error)) throw error;
       
       warn('[SmartBookmarker] LLM failed, using default:', error);
       return { category: t('defaultFolder') || 'Read Later', title: title };

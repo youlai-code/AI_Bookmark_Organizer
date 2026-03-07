@@ -1,6 +1,10 @@
 const OFFICIAL_PROXY = 'https://youlainote.cloud';
 import { initI18n, t } from '../utils/i18n.js';
 
+const MIN_RENAME_LENGTH = 4;
+const MAX_RENAME_LENGTH = 20;
+const DEFAULT_RENAME_LENGTH = 12;
+
 document.addEventListener('DOMContentLoaded', async () => {
   await initI18n();
   restoreOptions();
@@ -91,7 +95,8 @@ document.getElementById('clearHistory').addEventListener('click', clearHistory);
 function setupAutoSave() {
     const inputs = [
         'llmProvider', 'apiKey', 'model', 'baseUrl', 'ollamaHost',
-        'allowNewFolders', 'enableSmartRename', 'showFloatingButton', 'language', 'theme'
+        'allowNewFolders', 'enableSmartRename', 'renameMaxLength',
+        'showFloatingButton', 'language', 'theme'
     ];
     
     const debouncedSave = debounce(autoSaveOptions, 800);
@@ -104,6 +109,7 @@ function setupAutoSave() {
             el.addEventListener('change', () => {
                 if (id === 'llmProvider') updateUIState();
                 if (id === 'allowNewFolders') updateStrategyVisibility();
+                if (id === 'enableSmartRename') updateRenameLengthVisibility();
                 if (id === 'theme') applyTheme(el.value);
                 if (id === 'language') {
                     // When language changes, save then re-apply translations
@@ -116,6 +122,7 @@ function setupAutoSave() {
         } else {
             el.addEventListener('input', () => {
                 if (id === 'baseUrl') updateUIState();
+                if (id === 'renameMaxLength') updateRenameLengthDisplay(el.value);
                 debouncedSave();
             });
         }
@@ -137,6 +144,26 @@ function updateStrategyVisibility() {
             strategyGroup.style.display = 'none';
         }
     }
+}
+
+function updateRenameLengthDisplay(value) {
+    const display = document.getElementById('renameMaxLengthValue');
+    if (display) {
+        display.textContent = String(value);
+    }
+}
+
+function normalizeRenameLength(value) {
+    const parsed = parseInt(value, 10);
+    if (Number.isNaN(parsed)) return DEFAULT_RENAME_LENGTH;
+    return Math.max(MIN_RENAME_LENGTH, Math.min(MAX_RENAME_LENGTH, parsed));
+}
+
+function updateRenameLengthVisibility() {
+    const enableSmartRename = document.getElementById('enableSmartRename')?.checked;
+    const group = document.getElementById('renameLengthGroup');
+    if (!group) return;
+    group.style.display = enableSmartRename ? 'block' : 'none';
 }
 
 function debounce(func, wait) {
@@ -187,6 +214,7 @@ function autoSaveOptions() {
   const folderCreationLevel = folderCreationLevelRadio ? folderCreationLevelRadio.value : 'weak';
   
   const enableSmartRename = document.getElementById('enableSmartRename').checked;
+  const renameMaxLength = normalizeRenameLength(document.getElementById('renameMaxLength').value);
   const showFloatingButton = document.getElementById('showFloatingButton').checked;
   const language = document.getElementById('language').value;
   const theme = document.getElementById('theme').value;
@@ -199,7 +227,8 @@ function autoSaveOptions() {
   chrome.storage.sync.set(
     { 
       llmProvider, apiKey, model, baseUrl, ollamaHost, 
-      allowNewFolders, folderCreationLevel, enableSmartRename, showFloatingButton, language, theme 
+      allowNewFolders, folderCreationLevel, enableSmartRename, renameMaxLength,
+      showFloatingButton, language, theme 
     },
     () => {
       status.textContent = '✅ ' + (t('saveStatusSaved') || '已自动保存');
@@ -222,6 +251,7 @@ function restoreOptions() {
         allowNewFolders: false, 
         folderCreationLevel: 'weak',
         enableSmartRename: true, 
+        renameMaxLength: DEFAULT_RENAME_LENGTH,
         showFloatingButton: true,
         language: 'zh_CN',
         theme: 'auto',
@@ -275,6 +305,9 @@ function restoreOptions() {
       if (radio) radio.checked = true;
 
       document.getElementById('enableSmartRename').checked = items.enableSmartRename;
+      const normalizedRenameLength = normalizeRenameLength(items.renameMaxLength);
+      document.getElementById('renameMaxLength').value = normalizedRenameLength;
+      updateRenameLengthDisplay(normalizedRenameLength);
       document.getElementById('showFloatingButton').checked = items.showFloatingButton;
       document.getElementById('language').value = items.language;
       document.getElementById('theme').value = items.theme || 'auto';
@@ -283,6 +316,7 @@ function restoreOptions() {
       renderBlockedList(items.disabledDomains);
       updateUIState();
       updateStrategyVisibility();
+      updateRenameLengthVisibility();
       loadHistory();
     }
   );

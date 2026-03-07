@@ -24,6 +24,22 @@
         <!-- Tree rendered here -->
       </div>
     </div>
+
+    <div class="selection-hud">
+      <div id="selectionSummary" class="selection-summary" data-i18n="selectionSummary">已选 0 项</div>
+      <div id="dailyQuotaSummary" class="selection-summary quota-summary">今日剩余: --/100</div>
+      <div class="selection-actions-inline">
+        <button id="selectAll" class="text-btn" data-i18n="selectAll">全选标签</button>
+        <button id="clearSelection" class="text-btn" data-i18n="clearSelection">清空选择</button>
+      </div>
+      <div class="selection-actions-inline bulk-actions">
+        <button id="bulkSortTree" class="text-btn" data-i18n="bulkSortTree">批量排序</button>
+        <button id="bulkRenameSelected" class="text-btn" data-i18n="bulkRenameSelected">批量改名</button>
+        <button id="bulkClassifySelected" class="text-btn" data-i18n="bulkClassifySelected">批量归类</button>
+        <button id="checkInvalidSelected" class="text-btn" data-i18n="checkInvalidSelected">检测失效</button>
+        <button id="deleteSelectedBookmarks" class="text-btn danger" data-i18n="deleteSelectedBookmarks">批量删除</button>
+      </div>
+    </div>
   </div>
 
   <!-- Context Menu -->
@@ -32,9 +48,17 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
       <span data-i18n="ctxEdit">编辑</span>
     </div>
+    <div class="menu-item" id="ctxNewFolder">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><path d="M12 11v6"></path><path d="M9 14h6"></path></svg>
+      <span>新建收藏夹</span>
+    </div>
+    <div class="menu-item warning" id="ctxDeleteKeepBookmarks">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path><path d="M12 10v7"></path><path d="M9 13l3 3 3-3"></path></svg>
+      <span>删除文件夹</span>
+    </div>
     <div class="menu-item danger" id="ctxDelete">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-      <span data-i18n="ctxDelete">删除</span>
+      <span id="ctxDeleteText" data-i18n="ctxDelete">删除</span>
     </div>
   </div>
 
@@ -69,6 +93,31 @@
       <div class="modal-footer">
         <button class="text-btn" id="cancelEdit" data-i18n="btnCancel">取消</button>
         <button class="primary-btn" id="saveEdit" data-i18n="btnSave">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="bulkReviewModal" class="modal-overlay">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <h3 id="bulkReviewTitle">Batch action</h3>
+        <button class="close-btn" id="closeBulkReview">x</button>
+      </div>
+      <div class="modal-body bulk-review-body">
+        <p id="bulkReviewDescription" class="bulk-review-description"></p>
+        <div id="bulkReviewSummary" class="bulk-review-summary"></div>
+        <div id="bulkReviewToolbar" class="bulk-review-toolbar">
+          <div id="bulkReviewSelectionState" class="bulk-review-selection-state"></div>
+          <div class="bulk-review-toolbar-actions">
+            <button type="button" id="bulkReviewSelectAll" class="text-btn bulk-mini-btn">All</button>
+            <button type="button" id="bulkReviewSelectNone" class="text-btn bulk-mini-btn">None</button>
+          </div>
+        </div>
+        <div id="bulkReviewList" class="bulk-review-list"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="text-btn" id="bulkReviewCancel">Cancel</button>
+        <button class="primary-btn" id="bulkReviewConfirm">Confirm</button>
       </div>
     </div>
   </div>

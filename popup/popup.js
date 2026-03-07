@@ -1,5 +1,9 @@
 import { initI18n, t, applyUITranslations } from '../utils/i18n.js';
 import { log, error } from '../utils/logger.js';
+import { getDailyQuotaStatus, DAILY_USAGE_STORAGE_KEY } from '../utils/llm.js';
+import { DAILY_REQUEST_LIMIT } from '../config/app.config.js';
+
+const LLM_CONFIG_ERROR_CODE = 'MODEL_NOT_CONFIGURED';
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Apply theme first
@@ -10,6 +14,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await initI18n();
   applyUITranslations();
   loadHistory();
+  refreshDailyQuotaStatus();
   
   document.getElementById('smartBookmarkBtn').addEventListener('click', triggerSmartBookmark);
   
@@ -22,6 +27,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       chrome.runtime.openOptionsPage();
     } else {
       window.open(chrome.runtime.getURL('options/options.html'));
+    }
+  });
+
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'local' && changes[DAILY_USAGE_STORAGE_KEY]) {
+      refreshDailyQuotaStatus();
+      return;
+    }
+    if (area === 'sync' && changes.llmProvider) {
+      refreshDailyQuotaStatus();
     }
   });
 });
@@ -79,6 +94,9 @@ async function triggerSmartBookmark() {
         window.close();
       }, 1500);
     } else {
+      if (response?.errorCode === LLM_CONFIG_ERROR_CODE) {
+        alert(response.error || t('errorModelNotConfigured') || 'AI model is not configured.');
+      }
       throw new Error(response.error || t('unknownError') || '未知错误');
     }
 
@@ -90,6 +108,41 @@ async function triggerSmartBookmark() {
     btn.disabled = false;
   } finally {
     loadingRing.style.display = 'none';
+    refreshDailyQuotaStatus();
+  }
+}
+
+async function refreshDailyQuotaStatus() {
+  const quotaEl = document.getElementById('dailyQuotaStatus');
+  if (!quotaEl) return;
+
+  try {
+    const quota = await getDailyQuotaStatus();
+    if (!quota.tracked) {
+      const external = t('dailyQuotaExternal', { provider: quota.providerName || 'custom provider' });
+      quotaEl.textContent = external && external !== 'dailyQuotaExternal'
+        ? external
+        : `Quota managed by ${quota.providerName || 'custom provider'}`;
+      quotaEl.classList.remove('quota-low');
+      return;
+    }
+
+    const translated = t('dailyQuotaRemaining', {
+      remaining: String(quota.remaining),
+      limit: String(quota.limit)
+    });
+    const message = translated && translated !== 'dailyQuotaRemaining'
+      ? translated
+      : `Today remaining: ${quota.remaining}/${quota.limit}`;
+
+    quotaEl.textContent = message;
+    quotaEl.classList.toggle('quota-low', quota.remaining <= 10);
+  } catch (err) {
+    const unavailable = t('dailyQuotaUnavailable', { limit: String(DAILY_REQUEST_LIMIT) });
+    quotaEl.textContent = unavailable && unavailable !== 'dailyQuotaUnavailable'
+      ? unavailable
+      : `Today remaining: --/${DAILY_REQUEST_LIMIT}`;
+    quotaEl.classList.remove('quota-low');
   }
 }
 

@@ -125,6 +125,12 @@
   "enableSmartRenameHint": {
     "message": "开启后，AI 会自动将长标题简化（例如：\"哔哩哔哩 (゜-゜)つロ 干杯~-bilibili\" -> \"哔哩哔哩\"）。"
   },
+  "renameMaxLength": {
+    "message": "中文标题最大字数"
+  },
+  "renameMaxLengthHint": {
+    "message": "中文标题范围 4-20；非中文标题会自动放宽（约为 2 倍），并在本地截断保护。"
+  },
   "sectionBlockedMgmt": {
     "message": "屏蔽管理"
   },
@@ -154,6 +160,117 @@
   },
   "ctxDelete": {
     "message": "删除"
+  },
+  "selectionSummary": {
+    "message": "已选 $COUNT$ 项",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "selectAll": {
+    "message": "全选标签"
+  },
+  "clearSelection": {
+    "message": "清空选择"
+  },
+  "deleteSelected": {
+    "message": "删除已选"
+  },
+  "bulkRenameSelected": {
+    "message": "批量改名"
+  },
+  "bulkClassifySelected": {
+    "message": "批量归类"
+  },
+  "checkInvalidSelected": {
+    "message": "检测失效"
+  },
+  "deleteSelectedBookmarks": {
+    "message": "批量删除"
+  },
+  "bulkActionRunning": {
+    "message": "批量处理中..."
+  },
+  "bulkActionFailed": {
+    "message": "批量操作失败："
+  },
+  "bulkNoBookmarksSelected": {
+    "message": "请先选择至少一个标签。"
+  },
+  "confirmDeleteSelectedBookmarks": {
+    "message": "确定要删除选中的 $COUNT$ 个标签吗？",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bulkDeleteDone": {
+    "message": "已删除 $COUNT$ 个标签。",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "confirmBulkRename": {
+    "message": "确定要批量重命名 $COUNT$ 个标签吗？",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bulkRenameDone": {
+    "message": "批量重命名完成：成功 $SUCCESS$，失败 $FAILED$",
+    "placeholders": {
+      "success": {
+        "content": "$1"
+      },
+      "failed": {
+        "content": "$2"
+      }
+    }
+  },
+  "confirmBulkClassify": {
+    "message": "确定要批量分类 $COUNT$ 个标签吗？",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bulkClassifyDone": {
+    "message": "批量分类完成：成功 $SUCCESS$，失败 $FAILED$",
+    "placeholders": {
+      "success": {
+        "content": "$1"
+      },
+      "failed": {
+        "content": "$2"
+      }
+    }
+  },
+  "bulkCheckInvalidDone": {
+    "message": "失效检测完成：共 $TOTAL$ 个，疑似失效 $INVALID$ 个。",
+    "placeholders": {
+      "total": {
+        "content": "$1"
+      },
+      "invalid": {
+        "content": "$2"
+      }
+    }
+  },
+  "confirmDeleteSelected": {
+    "message": "确定要删除选中的 $COUNT$ 项吗？",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   },
   "modalEditTitle": {
     "message": "编辑收藏夹"
@@ -294,6 +411,25 @@
   "errorTimeout": {
     "message": "网络请求超时。如果您在中国境内，可能需要开启网络加速服务（VPN）。"
   },
+  "errorModelNotConfigured": {
+    "message": "AI 模型未配置，请先到设置页完成配置后再请求。"
+  },
+  "errorApiKeyRequired": {
+    "message": "AI 提供商 \"$PROVIDER$\" 未完成配置，请先在设置页填写 API Key。",
+    "placeholders": {
+      "provider": {
+        "content": "$1"
+      }
+    }
+  },
+  "errorModelIdRequired": {
+    "message": "AI 提供商 \"$PROVIDER$\" 未完成配置，请先在设置页填写 Model / Endpoint ID。",
+    "placeholders": {
+      "provider": {
+        "content": "$1"
+      }
+    }
+  },
   "bookmarkedSuccess": {
     "message": "已收藏: $CATEGORY$",
     "placeholders": {
@@ -314,7 +450,9 @@
   "toastAutoBookmarked": {
     "message": "自动归类到: $CATEGORY$",
     "placeholders": {
-      "category": { "content": "$1" }
+      "category": {
+        "content": "$1"
+      }
     }
   },
   "toastExtractionFailed": {
@@ -322,5 +460,261 @@
   },
   "defaultFolder": {
     "message": "默认收藏"
+  },
+  "bulkActionLabelRename": {
+    "message": "重命名"
+  },
+  "bulkActionLabelClassify": {
+    "message": "分类"
+  },
+  "bulkActionLabelCheck": {
+    "message": "检测"
+  },
+  "bulkActionLabelDelete": {
+    "message": "删除"
+  },
+  "bulkActionLabelDefault": {
+    "message": "批量"
+  },
+  "bulkPhaseAnalyze": {
+    "message": "分析中"
+  },
+  "bulkPhaseCheck": {
+    "message": "检测中"
+  },
+  "bulkPhaseApply": {
+    "message": "应用中"
+  },
+  "bulkPhaseDone": {
+    "message": "完成"
+  },
+  "bulkPhaseRunning": {
+    "message": "处理中"
+  },
+  "bulkReviewDefaultTitle": {
+    "message": "批量操作预览"
+  },
+  "bulkReviewNoRows": {
+    "message": "没有可展示的项目。"
+  },
+  "bulkReviewConfirm": {
+    "message": "确认"
+  },
+  "bulkReviewOk": {
+    "message": "确定"
+  },
+  "bulkReviewApply": {
+    "message": "应用"
+  },
+  "bulkReviewNoSelection": {
+    "message": "未选择任何变更。"
+  },
+  "bulkReviewOmittedTitle": {
+    "message": "更多项目已省略"
+  },
+  "bulkReviewOmittedDetail": {
+    "message": "还有 $COUNT$ 项未显示",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bulkReviewSelectAll": {
+    "message": "全选"
+  },
+  "bulkReviewSelectNone": {
+    "message": "清空"
+  },
+  "bulkReviewSelectedCount": {
+    "message": "已选 $SELECTED$/$TOTAL$",
+    "placeholders": {
+      "selected": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "bulkRenameReviewTitle": {
+    "message": "批量重命名预览"
+  },
+  "bulkRenameNothingToApply": {
+    "message": "没有可应用的重命名建议。"
+  },
+  "bulkRenameAnalysisFailed": {
+    "message": "有 $FAILED$ 个书签分析失败。",
+    "placeholders": {
+      "failed": {
+        "content": "$1"
+      }
+    }
+  },
+  "bulkRenameNoChange": {
+    "message": "所选书签无需重命名。"
+  },
+  "bulkRenameReviewDesc": {
+    "message": "请先确认 AI 的重命名建议，再应用变更（默认全选）。"
+  },
+  "bulkRenameReviewSummary": {
+    "message": "将重命名 $COUNT$ 个书签",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bulkRenameReviewSummaryWithFailed": {
+    "message": "将重命名 $COUNT$ 个书签，$FAILED$ 个分析失败",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "failed": {
+        "content": "$2"
+      }
+    }
+  },
+  "bulkRenameCancelled": {
+    "message": "已取消批量重命名，未应用任何变更。"
+  },
+  "bulkClassifyReviewTitle": {
+    "message": "批量分类预览"
+  },
+  "bulkClassifyNothingToApply": {
+    "message": "无需调整分类。"
+  },
+  "bulkClassifyAnalysisFailed": {
+    "message": "有 $FAILED$ 个书签分析失败。",
+    "placeholders": {
+      "failed": {
+        "content": "$1"
+      }
+    }
+  },
+  "bulkClassifyNoChange": {
+    "message": "所选书签已位于推荐文件夹。"
+  },
+  "bulkClassifyReviewDesc": {
+    "message": "请先确认目标文件夹，再移动书签（默认全选）。"
+  },
+  "bulkClassifyReviewSummary": {
+    "message": "将移动 $COUNT$ 个书签",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "bulkClassifyReviewSummaryWithFailed": {
+    "message": "将移动 $COUNT$ 个书签，$FAILED$ 个分析失败",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "failed": {
+        "content": "$2"
+      }
+    }
+  },
+  "bulkClassifyCancelled": {
+    "message": "已取消批量分类，未应用任何变更。"
+  },
+  "bulkInvalidReviewTitle": {
+    "message": "失效检测结果"
+  },
+  "bulkInvalidReviewDesc": {
+    "message": "已在树中高亮疑似失效链接。"
+  },
+  "bulkInvalidReviewDeleteDesc": {
+    "message": "请选择要删除的疑似失效链接（默认全选）。注意：网络波动、地区网络限制、网站反爬或临时故障都可能导致检测失败，不一定代表网站已失效，请谨慎删除。"
+  },
+  "bulkInvalidDeleteSelected": {
+    "message": "删除勾选项"
+  },
+  "bulkInvalidDeleteCancelled": {
+    "message": "已取消删除，未应用任何变更。"
+  },
+  "bulkInvalidDeleteDone": {
+    "message": "失效链接清理完成：已删除 $SUCCESS$ 条，失败 $FAILED$ 条。",
+    "placeholders": {
+      "success": {
+        "content": "$1"
+      },
+      "failed": {
+        "content": "$2"
+      }
+    }
+  },
+  "bulkDailyLimitReached": {
+    "message": "今日 AI 请求次数已达上限。"
+  },
+  "dailyLimitReached": {
+    "message": "今日 AI 请求次数已达上限（$LIMIT$），请明天再试。",
+    "placeholders": {
+      "limit": {
+        "content": "$1"
+      }
+    }
+  },
+  "dailyQuotaRemaining": {
+    "message": "今日剩余：$REMAINING$/$LIMIT$",
+    "placeholders": {
+      "remaining": {
+        "content": "$1"
+      },
+      "limit": {
+        "content": "$2"
+      }
+    }
+  },
+  "dailyQuotaUnavailable": {
+    "message": "今日剩余：--/$LIMIT$",
+    "placeholders": {
+      "limit": {
+        "content": "$1"
+      }
+    }
+  },
+  "dailyQuotaExternal": {
+    "message": "今日配额：由 $PROVIDER$ 服务商侧管理",
+    "placeholders": {
+      "provider": {
+        "content": "$1"
+      }
+    }
+  },
+  "bulkSortTree": {
+    "message": "批量排序"
+  },
+  "confirmBulkSortTree": {
+    "message": "确定对当前选中范围执行排序吗？\n规则：根目录（书签栏）先标签后文件夹，其他文件夹先文件夹后标签，同类按名称排序。"
+  },
+  "bulkSortNoChange": {
+    "message": "排序完成：无需变更。"
+  },
+  "bulkSortFailed": {
+    "message": "排序失败：无法读取收藏夹树。"
+  },
+  "bulkSortDone": {
+    "message": "排序完成：已移动 $MOVED$ 项，$FAILED$ 个文件夹处理失败（已扫描 $FOLDERS$ 个文件夹）。",
+    "placeholders": {
+      "moved": {
+        "content": "$1"
+      },
+      "failed": {
+        "content": "$2"
+      },
+      "folders": {
+        "content": "$3"
+      }
+    }
+  },
+  "bulkActionLabelSort": {
+    "message": "排序"
+  },
+  "bulkSortNoSelection": {
+    "message": "请先选中要排序的标签或文件夹。"
   }
 }
