@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
+
 <head>
   <meta charset="UTF-8">
   <title>AI书签整理</title>
@@ -8,9 +9,9 @@
   <link rel="stylesheet" href="segmented-control.css">
   <script src="theme_utils.js"></script>
 </head>
+
 <body>
   <div class="app-container">
-    <!-- 左侧侧边栏 -->
     <aside class="sidebar">
       <div class="logo-area">
         <h1>
@@ -22,37 +23,76 @@
         <ul>
           <li class="nav-item active" data-tab="settings">
             <span class="icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-            </span> <span data-i18n="navSettings">设置</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path
+                  d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z">
+                </path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </span>
+            <span data-i18n="navSettings">设置</span>
+          </li>
+          <li class="nav-item" data-tab="bookmarks">
+            <span class="icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+              </svg>
+            </span>
+            <span data-i18n="navBookmarks">书签备份</span>
           </li>
           <li class="nav-item" data-tab="blocked">
             <span class="icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
-            </span> <span data-i18n="navBlocked">屏蔽规则</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+              </svg>
+            </span>
+            <span data-i18n="navBlocked">屏蔽规则</span>
           </li>
           <li class="nav-item" data-tab="history">
             <span class="icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-            </span> <span data-i18n="navHistory">历史记录</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </span>
+            <span data-i18n="navHistory">历史记录</span>
+          </li>
+          <li class="nav-item" data-tab="about">
+            <span class="icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M12 16v-4"></path>
+                <path d="M12 8h.01"></path>
+              </svg>
+            </span>
+            <span data-i18n="navAbout">关于</span>
           </li>
         </ul>
       </nav>
-      
-      <!-- 底部语言切换 -->
+
       <div class="sidebar-footer">
         <div class="lang-selector">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
           <select id="language">
-            <option value="zh_CN">简体中文</option>
-            <option value="en">English</option>
+            <option value="zh_CN" data-i18n="langZh">简体中文</option>
+            <option value="en" data-i18n="langEn">English</option>
           </select>
         </div>
       </div>
     </aside>
 
-    <!-- 右侧主要内容区 -->
     <main class="main-content">
-      <!-- 顶部栏：标题 + 保存状态 -->
       <header class="top-bar">
         <h2 id="pageTitle" data-i18n="pageTitleSettings">设置</h2>
         <div class="actions">
@@ -61,67 +101,83 @@
       </header>
 
       <div class="content-wrapper">
-        <!-- 1. 设置页面 -->
         <div id="settings" class="tab-view active">
-          
           <div class="card">
             <div class="card-header">
               <h3 data-i18n="sectionAiConfig">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom; margin-right: 8px;"><path d="M12 2a10 10 0 1 0 10 10H12V2z"></path><path d="M12 2a10 10 0 0 1 10 10"></path><path d="M2 12h10"></path><path d="M2 12a10 10 0 0 1 10-10"></path></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round"
+                  style="vertical-align: text-bottom; margin-right: 8px;">
+                  <path d="M12 2a10 10 0 1 0 10 10H12V2z"></path>
+                  <path d="M12 2a10 10 0 0 1 10 10"></path>
+                  <path d="M2 12h10"></path>
+                  <path d="M2 12a10 10 0 0 1 10-10"></path>
+                </svg>
                 AI 模型配置
               </h3>
             </div>
             <div class="card-body">
               <div class="form-group">
-                <label data-i18n="llmProvider">LLM提供商:</label>
+                <label data-i18n="llmProvider">LLM 提供商</label>
                 <select id="llmProvider">
-                  <option value="default" data-i18n="providerDefault">默认模型 (免费/无需配置)</option>
-                  <option value="deepseek" data-i18n="providerDeepSeek">DeepSeek (官方API)</option>
+                  <option value="default" data-i18n="providerDefault">默认模型 (免费 / 无需配置)</option>
+                  <option value="deepseek" data-i18n="providerDeepSeek">DeepSeek (官方 API)</option>
                   <option value="chatgpt" data-i18n="providerChatGPT">ChatGPT (OpenAI)</option>
                   <option value="gemini" data-i18n="providerGemini">Gemini (Google API)</option>
                 </select>
               </div>
 
-              <!-- Default Model Status -->
-              <div id="defaultModelStatus" class="form-group status-box" style="display:none; background: #e6fffa; padding: 12px; border-radius: 4px; margin-bottom: 20px;">
-                  <div style="font-weight: 500; color: #047481; display: flex; align-items: center;" data-i18n="enabledDefaultModel">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="margin-right: 6px;"><title>DeepSeek</title><path d="M23.748 4.482c-.254-.124-.364.113-.512.234-.051.039-.094.09-.137.136-.372.397-.806.657-1.373.626-.829-.046-1.537.214-2.163.848-.133-.782-.575-1.248-1.247-1.548-.352-.156-.708-.311-.955-.65-.172-.241-.219-.51-.305-.774-.055-.16-.11-.323-.293-.35-.2-.031-.278.136-.356.276-.313.572-.434 1.202-.422 1.84.027 1.436.633 2.58 1.838 3.393.137.093.172.187.129.323-.082.28-.18.552-.266.833-.055.179-.137.217-.329.14a5.526 5.526 0 01-1.736-1.18c-.857-.828-1.631-1.742-2.597-2.458a11.365 11.365 0 00-.689-.471c-.985-.957.13-1.743.388-1.836.27-.098.093-.432-.779-.428-.872.004-1.67.295-2.687.684a3.055 3.055 0 01-.465.137 9.597 9.597 0 00-2.883-.102c-1.885.21-3.39 1.102-4.497 2.623C.082 8.606-.231 10.684.152 12.85c.403 2.284 1.569 4.175 3.36 5.653 1.858 1.533 3.997 2.284 6.438 2.14 1.482-.085 3.133-.284 4.994-1.86.47.234.962.327 1.78.397.63.059 1.236-.03 1.705-.128.735-.156.684-.837.419-.961-2.155-1.004-1.682-.595-2.113-.926 1.096-1.296 2.746-2.642 3.392-7.003.05-.347.007-.565 0-.845-.004-.17.035-.237.23-.256a4.173 4.173 0 001.545-.475c1.396-.763 1.96-2.015 2.093-3.517.02-.23-.004-.467-.247-.588zM11.581 18c-2.089-1.642-3.102-2.183-3.52-2.16-.392.024-.321.471-.235.763.09.288.207.486.371.739.114.167.192.416-.113.603-.673.416-1.842-.14-1.897-.167-1.361-.802-2.5-1.86-3.301-3.307-.774-1.393-1.224-2.887-1.298-4.482-.02-.386.093-.522.477-.592a4.696 4.696 0 011.529-.039c2.132.312 3.946 1.265 5.468 2.774.868.86 1.525 1.887 2.202 2.891.72 1.066 1.494 2.082 2.48 2.914.348.292.625.514.891.677-.802.09-2.14.11-3.054-.614zm1-6.44a.306.306 0 01.415-.287.302.302 0 01.2.288.306.306 0 01-.31.307.303.303 0 01-.304-.308zm3.11 1.596c-.2.081-.399.151-.59.16a1.245 1.245 0 01-.798-.254c-.274-.23-.47-.358-.552-.758a1.73 1.73 0 01.016-.588c.07-.327-.008-.537-.239-.727-.187-.156-.426-.199-.688-.199a.559.559 0 01-.254-.078c-.11-.054-.2-.19-.114-.358.028-.054.16-.186.192-.21.356-.202.767-.136 1.146.016.352.144.618.408 1.001.782.391.451.462.576.685.914.176.265.336.537.445.848.067.195-.019.354-.25.452z" fill="#4D6BFE"></path></svg>
-                    已启用默认模型
-                  </div>
-                  <div class="sub-hint" data-i18n="defaultModelHint">使用插件提供的免费加速通道，无需配置 API Key。</div>
+              <div id="defaultModelStatus" class="form-group status-box"
+                style="display:none; padding: 12px; border-radius: 4px; margin-bottom: 20px;">
+                <div style="font-weight: 500; color: #047481; display: flex; align-items: center;"
+                  data-i18n="enabledDefaultModel">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="margin-right: 6px;">
+                    <path
+                      d="M23.748 4.482c-.254-.124-.364.113-.512.234-.051.039-.094.09-.137.136-.372.397-.806.657-1.373.626-.829-.046-1.537.214-2.163.848-.133-.782-.575-1.248-1.247-1.548-.352-.156-.708-.311-.955-.65-.172-.241-.219-.51-.305-.774-.055-.16-.11-.323-.293-.35-.2-.031-.278.136-.356.276-.313.572-.434 1.202-.422 1.84.027 1.436.633 2.58 1.838 3.393.137.093.172.187.129.323-.082.28-.18.552-.266.833-.055.179-.137.217-.329.14a5.526 5.526 0 01-1.736-1.18c-.857-.828-1.631-1.742-2.597-2.458a11.365 11.365 0 00-.689-.471c-.985-.957.13-1.743.388-1.836.27-.098.093-.432-.779-.428-.872.004-1.67.295-2.687.684a3.055 3.055 0 01-.465.137 9.597 9.597 0 00-2.883-.102c-1.885.21-3.39 1.102-4.497 2.623C.082 8.606-.231 10.684.152 12.85c.403 2.284 1.569 4.175 3.36 5.653 1.858 1.533 3.997 2.284 6.438 2.14 1.482-.085 3.133-.284 4.994-1.86.47.234.962.327 1.78.397.63.059 1.236-.03 1.705-.128.735-.156.684-.837.419-.961-2.155-1.004-1.682-.595-2.113-.926 1.096-1.296 2.746-2.642 3.392-7.003.05-.347.007-.565 0-.845-.004-.17.035-.237.23-.256a4.173 4.173 0 001.545-.475c1.396-.763 1.96-2.015 2.093-3.517.02-.23-.004-.467-.247-.588zM11.581 18c-2.089-1.642-3.102-2.183-3.52-2.16-.392.024-.321.471-.235.763.09.288.207.486.371.739.114.167.192.416-.113.603-.673.416-1.842-.14-1.897-.167-1.361-.802-2.5-1.86-3.301-3.307-.774-1.393-1.224-2.887-1.298-4.482-.02-.386.093-.522.477-.592a4.696 4.696 0 011.529-.039c2.132.312 3.946 1.265 5.468 2.774.868.86 1.525 1.887 2.202 2.891.72 1.066 1.494 2.082 2.48 2.914.348.292.625.514.891.677-.802.09-2.14.11-3.054-.614zm1-6.44a.306.306 0 01.415-.287.302.302 0 01.2.288.306.306 0 01-.31.307.303.303 0 01-.304-.308zm3.11 1.596c-.2.081-.399.151-.59.16a1.245 1.245 0 01-.798-.254c-.274-.23-.47-.358-.552-.758a1.73 1.73 0 01.016-.588c.07-.327-.008-.537-.239-.727-.187-.156-.426-.199-.688-.199a.559.559 0 01-.254-.078c-.11-.054-.2-.19-.114-.358.028-.054.16-.186.192-.21.356-.202.767-.136 1.146.016.352.144.618.408 1.001.782.391.451.462.576.685.914.176.265.336.537.445.848.067.195-.019.354-.25.452z"
+                      fill="#4D6BFE"></path>
+                  </svg>
+                  已启用默认模型
+                </div>
+                <div class="sub-hint" data-i18n="defaultModelHint">使用插件提供的免费加速通道，无需配置 API Key。</div>
               </div>
 
               <div class="form-group" id="apiKeyGroup">
-                <label data-i18n="apiKey">API Key:</label>
-                <input type="password" id="apiKey" data-i18n-placeholder="apiKeyPlaceholder" placeholder="输入API密钥">
-              </div>
-              
-              <div class="form-group" id="modelGroup">
-                <label data-i18n="modelId">Model / Endpoint ID:</label>
-                <input type="text" id="model" data-i18n-placeholder="modelPlaceholder" placeholder="例如: deepseek-chat 或 ep-2024...">
-                <div class="hint" id="modelHint" data-i18n="modelHintDeepSeek">DeepSeek默认为 deepseek-chat</div>
+                <label data-i18n="apiKey">API Key</label>
+                <input type="password" id="apiKey" data-i18n-placeholder="apiKeyPlaceholder" placeholder="输入 API 密钥">
               </div>
 
-              <!-- Base URL Config for Proxy -->
+              <div class="form-group" id="modelGroup">
+                <label data-i18n="modelId">Model / Endpoint ID</label>
+                <input type="text" id="model" data-i18n-placeholder="modelPlaceholder"
+                  placeholder="例如: deepseek-chat 或 ep-2024...">
+                <div class="hint" id="modelHint" data-i18n="modelHintDeepSeek">DeepSeek 默认为 deepseek-chat</div>
+              </div>
+
               <div class="form-group" id="baseUrlGroup">
-                <label data-i18n="baseUrl">Base URL (可选 - 用于代理):</label>
-                <input type="text" id="baseUrl" data-i18n-placeholder="baseUrlPlaceholder" placeholder="https://api.deepseek.com">
+                <label data-i18n="baseUrl">Base URL (可选 - 用于代理)</label>
+                <input type="text" id="baseUrl" data-i18n-placeholder="baseUrlPlaceholder"
+                  placeholder="https://api.deepseek.com">
                 <div class="hint" data-i18n="defaultModelHint">默认使用官方免费加速通道，无需配置 Key。</div>
               </div>
-              
-              <!-- Proxy Status -->
-              <div id="proxyStatus" class="form-group status-box" style="display:none; background: #e6fffa; padding: 12px; border-radius: 4px; margin-bottom: 20px;">
-                  <div style="font-weight: 500; color: #047481; display: flex; align-items: center;" data-i18n="officialProxyEnabled">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                    已启用官方免费通道
-                  </div>
-                  <div class="sub-hint" data-i18n="officialProxyHint">您的 API 请求将通过加密代理转发，无需填写本地 Key，安全且免费。</div>
+
+              <div id="proxyStatus" class="form-group status-box"
+                style="display:none; padding: 12px; border-radius: 4px; margin-bottom: 20px;">
+                <div style="font-weight: 500; color: #047481; display: flex; align-items: center;"
+                  data-i18n="officialProxyEnabled">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                  </svg>
+                  已启用官方免费通道
+                </div>
+                <div class="sub-hint" data-i18n="officialProxyHint">您的 API 请求将通过加密代理转发，无需本地 Key，安全且免费。</div>
               </div>
 
               <div class="form-group" id="ollamaHostGroup" style="display:none;">
-                  <label>Ollama Host:</label>
-                  <input type="text" id="ollamaHost" placeholder="http://localhost:11434">
-                  <div class="hint">默认: http://localhost:11434</div>
+                <label>Ollama Host</label>
+                <input type="text" id="ollamaHost" placeholder="http://localhost:11434">
+                <div class="hint">默认: http://localhost:11434</div>
               </div>
             </div>
           </div>
@@ -129,29 +185,36 @@
           <div class="card">
             <div class="card-header">
               <h3 data-i18n="sectionBookmarkMgmt">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom; margin-right: 8px;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-                收藏夹管理
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round"
+                  style="vertical-align: text-bottom; margin-right: 8px;">
+                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                </svg>
+                书签偏好
               </h3>
             </div>
-            <div class="card-body">
+            <div class="card-body preference-settings">
               <div class="form-group checkbox-group">
                 <label>
                   <input type="checkbox" id="allowNewFolders">
-                  <span data-i18n="allowNewFolders">允许 AI 自动创建文件夹</span>
+                  <span data-i18n="allowNewFolders">允许 AI 自动创建新文件夹</span>
                 </label>
               </div>
 
               <div class="form-group" id="folderStrategyGroup">
-                <label data-i18n="folderCreationStrategy">AI 创建文件夹分类标准</label>
+                <label data-i18n="folderCreationStrategy">AI 创建文件夹策略</label>
                 <div class="segmented-control">
                   <input type="radio" name="folderStrategy" value="weak" id="strategy-weak">
-                  <label for="strategy-weak" data-i18n="creationLevelWeak" data-i18n-title="creationLevelWeakDesc">保守</label>
-                  
+                  <label for="strategy-weak" data-i18n="creationLevelWeak"
+                    data-i18n-title="creationLevelWeakDesc">保守</label>
+
                   <input type="radio" name="folderStrategy" value="medium" id="strategy-medium">
-                  <label for="strategy-medium" data-i18n="creationLevelMedium" data-i18n-title="creationLevelMediumDesc">平衡</label>
-                  
+                  <label for="strategy-medium" data-i18n="creationLevelMedium"
+                    data-i18n-title="creationLevelMediumDesc">平衡</label>
+
                   <input type="radio" name="folderStrategy" value="strong" id="strategy-strong">
-                  <label for="strategy-strong" data-i18n="creationLevelStrong" data-i18n-title="creationLevelStrongDesc">激进</label>
+                  <label for="strategy-strong" data-i18n="creationLevelStrong"
+                    data-i18n-title="creationLevelStrongDesc">激进</label>
                 </div>
                 <div class="hint" data-i18n="allowNewFoldersHint">控制 AI 创建新文件夹的倾向程度。</div>
               </div>
@@ -164,6 +227,27 @@
               </div>
 
               <div class="form-group checkbox-group">
+                <label>
+                  <input type="checkbox" id="captureNativeBookmarkEvents">
+                  <span data-i18n="captureNativeBookmarkEvents">接管浏览器原生收藏事件</span>
+                </label>
+                <div id="captureNativeBookmarkEventsWarningHint" class="sub-hint warning-hint" style="display: none;">
+                  <span class="warning-hint-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                      stroke-linejoin="round">
+                      <path
+                        d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z">
+                      </path>
+                      <line x1="12" y1="9" x2="12" y2="13"></line>
+                      <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                  </span>
+                  <span class="warning-hint-text" data-i18n="captureNativeBookmarkEventsWarning">注意：启用此功能后，使用浏览器原生星标或
+                    Ctrl+D 新建的书签也会参与智能分类，某些浏览器在自动同步书签时，可能重新触发原生收藏事件，从而导致意外自动分类。除非确有需要，建议保持关闭。</span>
+                </div>
+              </div>
+
+              <div class="form-group checkbox-group">
                 <label data-i18n-title="enableSmartRenameHint" style="width: fit-content;">
                   <input type="checkbox" id="enableSmartRename" checked>
                   <span data-i18n="enableSmartRename">开启智能重命名标题</span>
@@ -172,77 +256,208 @@
 
               <div class="form-group" id="renameLengthGroup">
                 <label for="renameMaxLength" class="range-label">
-                  <span data-i18n="renameMaxLength">中文标题最大字数</span>
+                  <span data-i18n="renameMaxLength">标题文本字数(非中文放宽到2倍）</span>
                   <span id="renameMaxLengthValue" class="range-value">12</span>
                 </label>
                 <input type="range" id="renameMaxLength" min="4" max="20" step="1" value="12">
-                <div class="hint" data-i18n="renameMaxLengthHint">中文标题范围 4-20；非中文标题会自动放宽（约为 2 倍），并在本地截断保护。</div>
               </div>
+            </div>
+          </div>
 
-              <!-- Appearance Settings -->
-              <div class="form-group" style="margin-top: 24px; border-top: 1px solid #dadce0; padding-top: 16px;">
-                  <label data-i18n="appearanceSettings">外观设置</label>
-                  <div style="display: flex; gap: 16px; align-items: center;">
-                      <div class="form-group" style="margin-bottom: 0; flex: 1;">
-                          <label data-i18n="theme" style="font-size: 13px; margin-bottom: 4px;">主题颜色</label>
-                          <select id="theme">
-                              <option value="auto" data-i18n="themeAuto">跟随系统</option>
-                              <option value="light" data-i18n="themeLight">浅色</option>
-                              <option value="dark" data-i18n="themeDark">深色</option>
-                          </select>
-                      </div>
-                  </div>
+          <div class="card">
+            <div class="card-header">
+              <h3 data-i18n="appearanceSettings">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round"
+                  style="vertical-align: text-bottom; margin-right: 8px;">
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path d="M12 2v2"></path>
+                  <path d="M12 20v2"></path>
+                  <path d="m4.93 4.93 1.41 1.41"></path>
+                  <path d="m17.66 17.66 1.41 1.41"></path>
+                  <path d="M2 12h2"></path>
+                  <path d="M20 12h2"></path>
+                  <path d="m6.34 17.66-1.41 1.41"></path>
+                  <path d="m19.07 4.93-1.41 1.41"></path>
+                </svg>
+                外观设置
+              </h3>
+            </div>
+            <div class="card-body appearance-settings">
+              <div class="form-group">
+                <label data-i18n="theme">主题颜色</label>
+                <select id="theme">
+                  <option value="auto" data-i18n="themeAuto">跟随系统</option>
+                  <option value="light" data-i18n="themeLight">浅色</option>
+                  <option value="dark" data-i18n="themeDark">深色</option>
+                </select>
               </div>
-
             </div>
           </div>
         </div>
 
-        <!-- 2. 屏蔽规则页面 -->
+        <div id="bookmarks" class="tab-view">
+          <div class="card">
+            <div class="card-header">
+              <h3 data-i18n="sectionBookmarkBackup">
+                <svg class="section-title-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7h18"></path>
+                  <path d="M6 3h12l1 4H5l1-4z"></path>
+                  <path d="M5 7v11a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7"></path>
+                  <path d="m12 11 3 3"></path>
+                  <path d="m12 11-3 3"></path>
+                  <path d="M12 11v6"></path>
+                </svg>
+                书签备份
+              </h3>
+              <p class="description" data-i18n="bookmarkBackupDesc">把手动备份直接存到扩展本地，并支持 HTML 导入和导出。</p>
+            </div>
+            <div class="card-body">
+              <div class="bookmark-tools">
+                <button id="createBackupNow" class="primary-btn" data-i18n="createBackupNow">立即备份</button>
+                <button id="exportBookmarksHtml" class="text-btn" data-i18n="exportBookmarksHtml">导出 HTML</button>
+                <button id="importBookmarksHtml" class="text-btn" data-i18n="importBookmarksHtml">导入 HTML</button>
+                <input type="file" id="bookmarkImportInput" accept=".html,.htm,text/html" hidden>
+              </div>
+              <div id="bookmarkBackupStatus" class="bookmark-backup-status" data-i18n="bookmarkBackupHint">
+                导入时会先自动创建一份安全备份，再把内容导入到书签栏下的新文件夹。</div>
+              <div class="backup-list-container">
+                <ul id="backupList"></ul>
+                <div id="emptyBackupMsg" data-i18n="noBackups">还没有备份记录</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div id="blocked" class="tab-view">
           <div class="card">
             <div class="card-header">
               <h3 data-i18n="sectionBlockedMgmt">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom; margin-right: 8px;"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round"
+                  style="vertical-align: text-bottom; margin-right: 8px;">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                </svg>
                 屏蔽管理
               </h3>
-              <p class="description" data-i18n="blockedDesc">以下网站不会显示悬浮收藏按钮：</p>
+              <p class="description" data-i18n="blockedDesc">以下网站不会显示悬浮收藏按钮。</p>
             </div>
             <div class="card-body">
               <div class="blocked-list-container">
-                <ul id="blockedList">
-                  <!-- 动态生成 -->
-                </ul>
+                <ul id="blockedList"></ul>
                 <div id="emptyListMsg" data-i18n="noBlockedSites">暂无屏蔽的网站</div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- 3. 历史记录页面 -->
         <div id="history" class="tab-view">
           <div class="card">
             <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
               <h3 data-i18n="sectionHistory">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: text-bottom; margin-right: 8px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round"
+                  style="vertical-align: text-bottom; margin-right: 8px;">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
                 历史收藏记录
               </h3>
               <button id="clearHistory" class="text-btn danger" data-i18n="clearHistory">清空记录</button>
             </div>
             <div class="card-body">
               <div class="history-list-container">
-                <ul id="historyList">
-                  <!-- 动态生成 -->
-                </ul>
+                <ul id="historyList"></ul>
                 <div id="emptyHistoryMsg" data-i18n="noHistory">暂无历史记录</div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="about" class="tab-view">
+          <div class="card">
+
+            <div class="card-body about-page">
+
+
+
+              <section class="about-section">
+                <div class="about-section-header">
+                  <h3 data-i18n="feedbackTitle">
+                    <svg class="section-title-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+                      <path d="m3 7 9 6 9-6"></path>
+                    </svg>
+                    问题反馈
+                  </h3>
+                  <p data-i18n="feedbackDesc">如果在使用过程中遇到问题，欢迎通过下面的邮箱反馈。</p>
+                </div>
+                <span data-i18n="feedbackEmailLabel">反馈邮箱：</span>
+                <a href="mailto:tenb68@126.com">tenb68@126.com</a>
+                <p class="open-source-link-text">
+                </p>
+              </section>
+
+              <section class="about-section">
+                <div class="about-section-header">
+                  <h3 data-i18n="faqTitle">
+                    <svg class="section-title-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="9"></circle>
+                      <path d="M9.09 9a3 3 0 0 1 5.82 1c0 2-3 3-3 3"></path>
+                      <path d="M12 17h.01"></path>
+                    </svg>
+                    常见问题
+                  </h3>
+                </div>
+                <h4 data-i18n="faqQuestionAccuracy">为什么分类不够准确？</h4>
+                <ul>
+                  <li data-i18n="faqAnswerAccuracy1">尽量在正文完整、信息充分的页面上使用</li>
+                  <li data-i18n="faqAnswerAccuracy2">调整“允许 AI 创建新文件夹”和对应策略</li>
+                  <li data-i18n="faqAnswerAccuracy3">检查模型和 API 配置是否正确</li>
+                </ul>
+                <h4 data-i18n="faqQuestionMissingBookmark">为什么找不到刚收藏的书签？</h4>
+                <ul>
+                  <li data-i18n="faqAnswerMissingBookmark1">可以到“书签树”或管理页中查看完整层级</li>
+                  <li data-i18n="faqAnswerMissingBookmark2">也可以在“历史记录”里快速打开最近收藏项目</li>
+                </ul>
+                <h4 data-i18n="faqQuestionFloatingButton">为什么悬浮按钮没有出现？</h4>
+                <ul>
+                  <li data-i18n="faqAnswerFloatingButton1">检查设置中是否开启了“显示悬浮智能收藏按钮”</li>
+                  <li data-i18n="faqAnswerFloatingButton2">某些网站可能已被加入隐藏列表</li>
+                </ul>
+              </section>
+
+              <section class="about-section">
+                <div class="about-section-header">
+                  <h3 data-i18n="supportTitle">
+                    <svg class="section-title-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 20.5 4.9 13.86a4.5 4.5 0 0 1 6.36-6.36L12 8.24l.74-.74a4.5 4.5 0 1 1 6.36 6.36z">
+                      </path>
+                    </svg>
+                    支持作者
+                  </h3>
+                  <p data-i18n="supportDesc">如果这个插件对你有帮助，欢迎打赏支持继续迭代。</p>
+                </div>
+                <div class="donation-grid donation-grid-single">
+                  <div class="donation-card donation-card-single">
+                    <img class="donation-qr-image" src="../icons/wechat.jpg" alt="微信赞赏码">
+                    <img class="donation-qr-image" src="../icons/Kofi.png" alt="Ko-Fi 赞赏码">
+                  </div>
+                </div>
+              </section>
             </div>
           </div>
         </div>
       </div>
     </main>
   </div>
-  
+
   <script type="module" src="options.js"></script>
 </body>
+
 </html>

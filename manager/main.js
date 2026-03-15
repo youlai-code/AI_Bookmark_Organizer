@@ -8,6 +8,7 @@ import {
   DAILY_USAGE_STORAGE_KEY
 } from '../utils/llm.js';
 import { createOrGetFolder, moveBookmark, getExistingFolderNames } from '../utils/bookmark.js';
+import { createBookmarkBackup, formatBackupTimestamp } from '../utils/bookmark_backup.js';
 import { DAILY_REQUEST_LIMIT } from '../config/app.config.js';
 
 let contextMenuTargetNode = null;
@@ -59,6 +60,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('ctxDelete').addEventListener('click', handleDelete);
   document.getElementById('selectAll').addEventListener('click', selectAll);
   document.getElementById('clearSelection').addEventListener('click', clearSelection);
+  document.getElementById('manualBackupCurrent').addEventListener('click', handleManualBackupCurrent);
   document.getElementById('bulkSortTree').addEventListener('click', handleBulkSortTree);
   document.getElementById('bulkRenameSelected').addEventListener('click', handleBulkRenameSelected);
   document.getElementById('bulkClassifySelected').addEventListener('click', handleBulkClassifySelected);
@@ -116,20 +118,35 @@ function applyTranslations() {
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
     const message = t(key);
-    if (message) el.textContent = message;
+    if (message && message !== key) el.textContent = message;
   });
   
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
     const key = el.getAttribute('data-i18n-placeholder');
     const message = t(key);
-    if (message) el.placeholder = message;
+    if (message && message !== key) el.placeholder = message;
   });
 
   document.querySelectorAll('[data-i18n-title]').forEach(el => {
     const key = el.getAttribute('data-i18n-title');
     const message = t(key);
-    if (message) el.title = message;
+    if (message && message !== key) el.title = message;
   });
+
+  const manualBackupButton = document.getElementById('manualBackupCurrent');
+  if (manualBackupButton) {
+    manualBackupButton.textContent = tr('manualBackupCurrent', '备份当前书签');
+  }
+
+  const newFolderLabel = document.querySelector('#ctxNewFolder span');
+  if (newFolderLabel) {
+    newFolderLabel.textContent = tr('ctxNewFolder', '新建收藏夹');
+  }
+
+  const deleteKeepLabel = document.querySelector('#ctxDeleteKeepBookmarks span');
+  if (deleteKeepLabel) {
+    deleteKeepLabel.textContent = tr('ctxDeleteKeepBookmarks', '删除文件夹并保留书签');
+  }
 
   updateManagerTitleWithCount(currentBookmarkCount);
   updateSelectionSummary();
@@ -895,6 +912,7 @@ function setBulkButtonsDisabled(disabled) {
   [
     'selectAll',
     'clearSelection',
+    'manualBackupCurrent',
     'bulkSortTree',
     'bulkRenameSelected',
     'bulkClassifySelected',
@@ -1747,6 +1765,42 @@ async function handleDeleteSelectedBookmarks() {
     loadBookmarksTree();
     showBulkResult(t('bulkDeleteDone', { count: String(bookmarkIds.length) }) || `已删除 ${bookmarkIds.length} 个标签。`);
   });
+}
+
+async function handleManualBackupCurrent() {
+  const button = document.getElementById('manualBackupCurrent');
+  if (button) {
+    button.disabled = true;
+  }
+
+  try {
+    const backup = await createBookmarkBackup({
+      source: 'manager'
+    });
+
+    showBulkResult(
+      tr(
+        'manualBackupCreated',
+        `已创建备份：${tr('manualBackupLabel', '手动备份')} ${formatBackupTimestamp(backup.createdAt)}（${backup.bookmarkCount} 个书签）。`,
+        {
+          label: `${tr('manualBackupLabel', '手动备份')} ${formatBackupTimestamp(backup.createdAt)}`,
+          count: String(backup.bookmarkCount)
+        }
+      )
+    );
+  } catch (err) {
+    showBulkResult(
+      tr(
+        'manualBackupFailed',
+        `备份失败：${err?.message || err}`,
+        { error: err?.message || String(err) }
+      )
+    );
+  } finally {
+    if (button) {
+      button.disabled = false;
+    }
+  }
 }
 
 async function handleBulkSortTree() {

@@ -80,6 +80,32 @@ if (Test-Path $zipPath) {
 }
 
 New-Item -ItemType Directory -Force -Path $outDir | Out-Null
-Compress-Archive -Path (Join-Path $stageDir '*') -DestinationPath $zipPath -Force
+Add-Type -AssemblyName System.IO.Compression
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+
+$zipFileStream = [System.IO.File]::Open($zipPath, [System.IO.FileMode]::Create)
+try {
+  $zipArchive = New-Object System.IO.Compression.ZipArchive($zipFileStream, [System.IO.Compression.ZipArchiveMode]::Create, $false)
+  try {
+    Get-ChildItem -Path $stageDir -Recurse -File | ForEach-Object {
+      $relativePath = $_.FullName.Substring($stageDir.Length).TrimStart('\', '/')
+      $entryName = $relativePath -replace '\\', '/'
+      $entry = $zipArchive.CreateEntry($entryName, [System.IO.Compression.CompressionLevel]::Optimal)
+
+      $entryStream = $entry.Open()
+      $sourceStream = [System.IO.File]::OpenRead($_.FullName)
+      try {
+        $sourceStream.CopyTo($entryStream)
+      } finally {
+        $sourceStream.Dispose()
+        $entryStream.Dispose()
+      }
+    }
+  } finally {
+    $zipArchive.Dispose()
+  }
+} finally {
+  $zipFileStream.Dispose()
+}
 
 Write-Host "OK: $zipPath"

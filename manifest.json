@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_appName__",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "description": "__MSG_appDesc__",
   "default_locale": "zh_CN",
   "permissions": [
@@ -40,15 +40,6 @@
       "run_at": "document_end"
     }
   ],
-  "commands": {
-    "trigger_smart_bookmark": {
-      "suggested_key": {
-        "default": "Alt+Shift+S",
-        "mac": "Alt+Shift+S"
-      },
-      "description": "一键触发智能书签分类"
-    }
-  },
   "web_accessible_resources": [
     {
       "resources": [

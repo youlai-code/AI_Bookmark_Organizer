@@ -471,7 +471,7 @@ async function handleBookmark() {
   }
 }
 
-// 监听来自 Background 的消息 (主要用于快捷键触发后的反馈)
+// 监听来自 Background 的消息 (用于插件显式触发后的反馈)
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.type === 'SHOW_TOAST') {
         showToast(request.message, request.status);

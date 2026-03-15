@@ -23,11 +23,14 @@
   "navHistory": {
     "message": "History"
   },
+  "navAbout": {
+    "message": "About"
+  },
   "navManager": {
     "message": "Bookmark Manager"
   },
   "navBookmarks": {
-    "message": "Bookmark Tree"
+    "message": "Backups"
   },
   "pageTitleSettings": {
     "message": "Settings"
@@ -117,7 +120,16 @@
     "message": "Show floating smart bookmark button"
   },
   "showFloatingButtonHint": {
-    "message": "Show a quick bookmark button in the bottom right corner. Can still be triggered via shortcut (Alt+Shift+S) if disabled."
+    "message": "Show a quick bookmark button in the bottom right corner."
+  },
+  "captureNativeBookmarkEvents": {
+    "message": "Capture browser native bookmark events"
+  },
+  "captureNativeBookmarkEventsHint": {
+    "message": "When enabled, bookmarks created from the browser's built-in star button or Ctrl+D will also be smart-classified."
+  },
+  "captureNativeBookmarkEventsWarning": {
+    "message": "Warning: after enabling this feature, bookmarks created from the browser's built-in star button or Ctrl+D will also be smart-classified.\nIn some browsers, bookmark auto-sync may recreate native bookmark events and trigger unexpected auto-classification.\nLeave this off unless you really need it."
   },
   "enableSmartRename": {
     "message": "Enable Smart Title Renaming"
@@ -126,7 +138,7 @@
     "message": "AI will automatically simplify long titles (e.g., \"Bilibili (゜-゜)つロ Cheers~-bilibili\" -> \"Bilibili\")."
   },
   "renameMaxLength": {
-    "message": "Max Chinese Title Length"
+    "message": "Title Text Length (2x for Non-Chinese)"
   },
   "renameMaxLengthHint": {
     "message": "Chinese title range is 4-20. Non-Chinese titles are relaxed automatically (about 2x), with local truncation guard."
@@ -328,6 +340,90 @@
   },
   "appearanceSettings": {
     "message": "Appearance"
+  },
+  "aboutTitle": {
+    "message": "About"
+  },
+  "aboutDesc": {
+    "message": "Learn more about the extension and optionally support the author here."
+  },
+  "aboutAppName": {
+    "message": "AI Bookmark Organizer"
+  },
+  "aboutAppSummary": {
+    "message": "Use AI to help collect, rename, and batch organize bookmarks into a cleaner library."
+  },
+  "openSourceTitle": {
+    "message": "Open Source"
+  },
+  "openSourceDesc": {
+    "message": "This extension is open source on GitHub. If it helps you, a Star would mean a lot."
+  },
+  "openSourceLinkLabel": {
+    "message": "Open GitHub Repository"
+  },
+  "openSourceRepoHint": {
+    "message": "Repository:"
+  },
+  "feedbackTitle": {
+    "message": "Feedback"
+  },
+  "feedbackDesc": {
+    "message": "If you run into issues while using the extension, feel free to contact us by email."
+  },
+  "feedbackEmailLabel": {
+    "message": "Email:"
+  },
+  "faqTitle": {
+    "message": "FAQ"
+  },
+  "faqQuestionAccuracy": {
+    "message": "Why isn't the classification accurate enough?"
+  },
+  "faqAnswerAccuracy1": {
+    "message": "Try using it on pages with complete main content and enough context."
+  },
+  "faqAnswerAccuracy2": {
+    "message": "Adjust \"Allow AI to create new folders\" and the related strategy."
+  },
+  "faqAnswerAccuracy3": {
+    "message": "Check whether the model and API settings are configured correctly."
+  },
+  "faqQuestionMissingBookmark": {
+    "message": "Why can't I find the bookmark I just saved?"
+  },
+  "faqAnswerMissingBookmark1": {
+    "message": "You can inspect the full hierarchy in \"Bookmark Tree\" or the management page."
+  },
+  "faqAnswerMissingBookmark2": {
+    "message": "You can also quickly reopen recently saved items from \"History\"."
+  },
+  "faqQuestionFloatingButton": {
+    "message": "Why isn't the floating button showing up?"
+  },
+  "faqAnswerFloatingButton1": {
+    "message": "Check whether \"Show floating smart bookmark button\" is enabled in settings."
+  },
+  "faqAnswerFloatingButton2": {
+    "message": "Some websites may already be added to the hidden list."
+  },
+  "supportTitle": {
+    "message": "Support the Author"
+  },
+  "supportDesc": {
+    "message": "If this extension is helpful to you, you're welcome to support its continued development."
+  },
+  "donationWechat": {
+    "message": "WeChat Tip QR"
+  },
+  "donationAlipay": {
+    "message": "Alipay Tip QR"
+  },
+  "donationPlaceholder": {
+    "message": "Place your QR code image here"
+  },
+  "donationFootnote": {
+    "message": "Later, you can directly replace this placeholder with your real WeChat donation QR image."
   },
   "theme": {
     "message": "Theme"
@@ -716,5 +812,164 @@
   },
   "bulkSortNoSelection": {
     "message": "Please select bookmarks or folders to sort first."
+  },
+  "sectionBookmarkBackup": {
+    "message": "Bookmark Backup"
+  },
+  "bookmarkBackupDesc": {
+    "message": "Store manual bookmark backups inside the extension and import or export HTML files."
+  },
+  "createBackupNow": {
+    "message": "Create Backup"
+  },
+  "exportBookmarksHtml": {
+    "message": "Export HTML"
+  },
+  "importBookmarksHtml": {
+    "message": "Import HTML"
+  },
+  "bookmarkBackupHint": {
+    "message": "Importing creates a safety backup first, then imports bookmarks into a new folder under the bookmark bar."
+  },
+  "noBackups": {
+    "message": "No backup records yet"
+  },
+  "manualBackupCurrent": {
+    "message": "Backup Current"
+  },
+  "manualBackupLabel": {
+    "message": "Manual backup"
+  },
+  "manualBackupCreated": {
+    "message": "Backup created: $LABEL$ ($COUNT$ bookmarks).",
+    "placeholders": {
+      "label": {
+        "content": "$1"
+      },
+      "count": {
+        "content": "$2"
+      }
+    }
+  },
+  "manualBackupFailed": {
+    "message": "Backup failed: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "backupItemMeta": {
+    "message": "$TIME$ · $SOURCE$ · $BOOKMARKS$ bookmarks · $FOLDERS$ folders",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      },
+      "source": {
+        "content": "$2"
+      },
+      "bookmarks": {
+        "content": "$3"
+      },
+      "folders": {
+        "content": "$4"
+      }
+    }
+  },
+  "restoreBackup": {
+    "message": "Restore"
+  },
+  "deleteBackup": {
+    "message": "Delete"
+  },
+  "confirmRestoreBackup": {
+    "message": "Restore this backup? A safety backup of current bookmarks will be created first."
+  },
+  "confirmDeleteBackup": {
+    "message": "Delete this stored backup?"
+  },
+  "bookmarkBackupCreating": {
+    "message": "Creating backup..."
+  },
+  "bookmarkExportRunning": {
+    "message": "Exporting bookmarks..."
+  },
+  "bookmarkExportTitle": {
+    "message": "Bookmarks"
+  },
+  "bookmarkExportDone": {
+    "message": "HTML export started."
+  },
+  "bookmarkExportFailed": {
+    "message": "Export failed: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "bookmarkImportRunning": {
+    "message": "Importing HTML..."
+  },
+  "bookmarkImportFolderPrefix": {
+    "message": "Imported"
+  },
+  "bookmarkImportDone": {
+    "message": "Imported $COUNT$ bookmarks into \"$FOLDER$\".",
+    "placeholders": {
+      "folder": {
+        "content": "$1"
+      },
+      "count": {
+        "content": "$2"
+      }
+    }
+  },
+  "bookmarkImportFailed": {
+    "message": "Import failed: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "bookmarkRestoreRunning": {
+    "message": "Restoring backup..."
+  },
+  "preRestoreBackupLabel": {
+    "message": "Pre-restore backup"
+  },
+  "bookmarkRestoreDone": {
+    "message": "Backup restored: $LABEL$",
+    "placeholders": {
+      "label": {
+        "content": "$1"
+      }
+    }
+  },
+  "bookmarkRestoreFailed": {
+    "message": "Restore failed: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "bookmarkDeleteDone": {
+    "message": "Backup deleted."
+  },
+  "bookmarkDeleteFailed": {
+    "message": "Delete failed: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "ctxNewFolder": {
+    "message": "New Folder"
+  },
+  "ctxDeleteKeepBookmarks": {
+    "message": "Delete Folder, Keep Bookmarks"
   }
 }

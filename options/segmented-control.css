@@ -3,8 +3,8 @@
   display: flex;
   width: fit-content;
   min-width: 300px;
-  background-color: #ffffff;
-  border: 1px solid #dadce0;
+  background-color: var(--segmented-bg, #ffffff);
+  border: 1px solid var(--segmented-border, #dadce0);
   border-radius: 4px;
   overflow: hidden;
   margin-top: 8px;
@@ -19,11 +19,11 @@
   padding: 8px 12px;
   text-align: center;
   cursor: pointer;
-  border-right: 1px solid #dadce0;
+  border-right: 1px solid var(--segmented-border, #dadce0);
   margin: 0;
   font-size: 13px;
-  color: #5f6368;
-  background-color: #ffffff;
+  color: var(--segmented-text, #5f6368);
+  background-color: var(--segmented-bg, #ffffff);
   transition: all 0.2s;
   font-weight: 500;
   display: flex;
@@ -36,11 +36,11 @@
 }
 
 .segmented-control label:hover {
-  background-color: #f1f3f4;
+  background-color: var(--segmented-hover-bg, #f1f3f4);
 }
 
 .segmented-control input[type="radio"]:checked + label {
-  background-color: #e8f0fe;
-  color: #4D6BFE;
+  background-color: var(--segmented-selected-bg, #e8f0fe);
+  color: var(--segmented-selected-text, #4D6BFE);
   font-weight: 600;
 }

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI书签整理 · 收藏夹树</title>
+  <title>AI书签整理 - 书签管理</title>
   <link rel="icon" type="image/png" href="../icons/icon128.png">
   <link rel="stylesheet" href="style.css">
   <script src="../options/theme_utils.js"></script>
@@ -13,7 +13,7 @@
     <div class="header-area">
       <div class="logo">
         <img class="app-icon" src="../icons/icon128.png" alt="">
-        <span data-i18n="managerTitle">AI书签整理 · 收藏夹树</span>
+        <span data-i18n="managerTitle">AI书签整理 - 书签树</span>
       </div>
     </div>
     <div class="search-box">
@@ -29,10 +29,11 @@
       <div id="selectionSummary" class="selection-summary" data-i18n="selectionSummary">已选 0 项</div>
       <div id="dailyQuotaSummary" class="selection-summary quota-summary">今日剩余: --/100</div>
       <div class="selection-actions-inline">
-        <button id="selectAll" class="text-btn" data-i18n="selectAll">全选标签</button>
+        <button id="selectAll" class="text-btn" data-i18n="selectAll">全选书签</button>
         <button id="clearSelection" class="text-btn" data-i18n="clearSelection">清空选择</button>
       </div>
       <div class="selection-actions-inline bulk-actions">
+        <button id="manualBackupCurrent" class="text-btn" data-i18n="manualBackupCurrent">备份当前书签</button>
         <button id="bulkSortTree" class="text-btn" data-i18n="bulkSortTree">批量排序</button>
         <button id="bulkRenameSelected" class="text-btn" data-i18n="bulkRenameSelected">批量改名</button>
         <button id="bulkClassifySelected" class="text-btn" data-i18n="bulkClassifySelected">批量归类</button>
@@ -42,7 +43,6 @@
     </div>
   </div>
 
-  <!-- Context Menu -->
   <div id="contextMenu" class="context-menu">
     <div class="menu-item" id="ctxEdit">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
@@ -50,11 +50,11 @@
     </div>
     <div class="menu-item" id="ctxNewFolder">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><path d="M12 11v6"></path><path d="M9 14h6"></path></svg>
-      <span>新建收藏夹</span>
+      <span data-i18n="ctxNewFolder">新建收藏夹</span>
     </div>
     <div class="menu-item warning" id="ctxDeleteKeepBookmarks">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path><path d="M12 10v7"></path><path d="M9 13l3 3 3-3"></path></svg>
-      <span>删除文件夹</span>
+      <span data-i18n="ctxDeleteKeepBookmarks">删除文件夹并保留书签</span>
     </div>
     <div class="menu-item danger" id="ctxDelete">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
@@ -62,16 +62,15 @@
     </div>
   </div>
 
-  <!-- Edit Modal -->
   <div id="editModal" class="modal-overlay">
     <div class="modal">
       <div class="modal-header">
-        <h3 data-i18n="modalEditTitle">编辑收藏夹</h3>
-        <button class="close-btn" id="closeModal">×</button>
+        <h3 data-i18n="modalEditTitle">编辑书签</h3>
+        <button class="close-btn" id="closeModal">x</button>
       </div>
       <div class="modal-body">
         <input type="hidden" id="editId">
-        
+
         <div class="form-group">
           <label data-i18n="labelName">名称</label>
           <input type="text" id="editTitle">
@@ -85,7 +84,7 @@
         <div class="form-group">
           <label data-i18n="labelFolder">文件夹</label>
           <div class="folder-selector" id="folderSelector">
-            <!-- 动态加载文件夹树 -->
+            <!-- Folder tree -->
           </div>
           <input type="hidden" id="editParentId">
         </div>

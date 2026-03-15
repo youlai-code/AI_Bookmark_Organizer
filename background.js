@@ -20,11 +20,19 @@ class SmartBookmarker {
   constructor() {
     this.recentlyProcessedUrls = new Set();
     this.processingQueue = new Set(); // Prevent double processing
+    this.isImportingBookmarks = false;
   }
 
   // Check if URL is supported for content extraction
   isSupportedUrl(url) {
     return url && (url.startsWith('http://') || url.startsWith('https://'));
+  }
+
+  async shouldCaptureNativeBookmarkEvents() {
+    const { captureNativeBookmarkEvents } = await chrome.storage.sync.get({
+      captureNativeBookmarkEvents: false
+    });
+    return Boolean(captureNativeBookmarkEvents);
   }
 
   // Main entry point for bookmarking logic
@@ -176,7 +184,7 @@ class SmartBookmarker {
 
     let finalBookmarkId = bookmarkId;
 
-    // If updating an existing bookmark object (from onCreated)
+    // Update an existing bookmark when reclassifying an existing bookmark entry.
     if (bookmarkId) {
       await moveBookmark(bookmarkId, folderId);
       if (newTitle && newTitle !== originalTitle) {
@@ -193,7 +201,7 @@ class SmartBookmarker {
           await chrome.bookmarks.update(existing.id, { title: newTitle });
         }
       } else {
-        // Mark as recently processed to avoid onCreated loop
+        // Mark extension-created bookmarks so the native create listener does not reprocess them.
         this.recentlyProcessedUrls.add(url);
         const created = await chrome.bookmarks.create({
           parentId: folderId,
@@ -201,7 +209,6 @@ class SmartBookmarker {
           url: url
         });
         finalBookmarkId = created?.id;
-        // Cleanup cache after 10s
         setTimeout(() => this.recentlyProcessedUrls.delete(url), 10000);
       }
     }
@@ -280,15 +287,28 @@ const bookmarker = new SmartBookmarker();
 // ==========================================
 // Event Listeners
 // ==========================================
+if (chrome.bookmarks.onImportBegan && chrome.bookmarks.onImportEnded) {
+  chrome.bookmarks.onImportBegan.addListener(() => {
+    bookmarker.isImportingBookmarks = true;
+    log('[Background] Bookmark import started, skipping native auto classification');
+  });
 
-// 1. Native Bookmark Creation
+  chrome.bookmarks.onImportEnded.addListener(() => {
+    bookmarker.isImportingBookmarks = false;
+    log('[Background] Bookmark import finished');
+  });
+}
+
+// Native bookmark events are handled only when the user explicitly enables the option.
 chrome.bookmarks.onCreated.addListener(async (id, bookmark) => {
   if (!bookmark.url) return; // Folder
+  if (bookmarker.isImportingBookmarks) return; // Preserve imported bookmark structure
   if (bookmarker.recentlyProcessedUrls.has(bookmark.url)) return; // Created by us
   if (!bookmarker.isSupportedUrl(bookmark.url)) return; // Local file or chrome://
+  if (!(await bookmarker.shouldCaptureNativeBookmarkEvents())) return;
 
   await bookmarker.process({
-    tabId: null, // Will try to find tab
+    tabId: null,
     url: bookmark.url,
     title: bookmark.title,
     bookmarkId: id,
@@ -296,23 +316,7 @@ chrome.bookmarks.onCreated.addListener(async (id, bookmark) => {
   });
 });
 
-// 2. Keyboard Shortcuts
-chrome.commands.onCommand.addListener(async (command) => {
-  if (command === 'trigger_smart_bookmark') {
-    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-    const tab = tabs[0];
-    if (tab && bookmarker.isSupportedUrl(tab.url)) {
-      await bookmarker.process({
-        tabId: tab.id,
-        url: tab.url,
-        title: tab.title,
-        isManual: true
-      });
-    }
-  }
-});
-
-// 3. Message Passing (Popup & Content Script)
+// 1. Message Passing (Popup & Content Script)
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   // Case A: Popup Trigger
   if (request.type === 'TRIGGER_CLASSIFICATION_FROM_POPUP') {

@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('smartBookmarkBtn').addEventListener('click', triggerSmartBookmark);
   
   document.getElementById('openManager').addEventListener('click', () => {
-    chrome.tabs.create({ url: 'manager/index.html' });
+    chrome.tabs.create({ url: chrome.runtime.getURL('manager/index.html') });
   });
 
   document.getElementById('openOptions').addEventListener('click', () => {

@@ -23,6 +23,9 @@
   "navHistory": {
     "message": "历史记录"
   },
+  "navAbout": {
+    "message": "关于"
+  },
   "navManager": {
     "message": "书签管理器"
   },
@@ -117,7 +120,16 @@
     "message": "显示悬浮智能收藏按钮"
   },
   "showFloatingButtonHint": {
-    "message": "在页面右下角显示快捷收藏按钮。关闭后仍可使用快捷键 (Alt+Shift+S) 触发。"
+    "message": "在页面右下角显示快捷收藏按钮。"
+  },
+  "captureNativeBookmarkEvents": {
+    "message": "接管浏览器原生收藏事件"
+  },
+  "captureNativeBookmarkEventsHint": {
+    "message": "启用后，使用浏览器原生星标或 Ctrl+D 新建的书签也会参与智能分类。"
+  },
+  "captureNativeBookmarkEventsWarning": {
+    "message": "注意：启用此功能后，使用浏览器原生星标或 Ctrl+D 新建的书签也会参与智能分类，\n某些浏览器在自动同步书签时，可能重新触发原生收藏事件，从而导致意外自动分类。\n除非确有需要，建议保持关闭。"
   },
   "enableSmartRename": {
     "message": "开启智能重命名标题"
@@ -126,7 +138,7 @@
     "message": "开启后，AI 会自动将长标题简化（例如：\"哔哩哔哩 (゜-゜)つロ 干杯~-bilibili\" -> \"哔哩哔哩\"）。"
   },
   "renameMaxLength": {
-    "message": "中文标题最大字数"
+    "message": "标题文本字数(非中文放宽到2倍）"
   },
   "renameMaxLengthHint": {
     "message": "中文标题范围 4-20；非中文标题会自动放宽（约为 2 倍），并在本地截断保护。"
@@ -328,6 +340,90 @@
   },
   "appearanceSettings": {
     "message": "外观设置"
+  },
+  "aboutTitle": {
+    "message": "关于"
+  },
+  "aboutDesc": {
+    "message": "了解插件信息，也可以在这里支持作者。"
+  },
+  "aboutAppName": {
+    "message": "AI 书签整理"
+  },
+  "aboutAppSummary": {
+    "message": "用 AI 协助收藏、重命名和批量整理书签，让收藏夹更干净。"
+  },
+  "openSourceTitle": {
+    "message": "开源项目"
+  },
+  "openSourceDesc": {
+    "message": "这个扩展已经开源在 GitHub 上，如果觉得有帮助，欢迎点个 Star 支持一下。"
+  },
+  "openSourceLinkLabel": {
+    "message": "打开 GitHub 仓库"
+  },
+  "openSourceRepoHint": {
+    "message": "仓库地址："
+  },
+  "feedbackTitle": {
+    "message": "问题反馈"
+  },
+  "feedbackDesc": {
+    "message": "如果在使用过程中遇到问题，欢迎通过下面的邮箱反馈。"
+  },
+  "feedbackEmailLabel": {
+    "message": "反馈邮箱："
+  },
+  "faqTitle": {
+    "message": "常见问题"
+  },
+  "faqQuestionAccuracy": {
+    "message": "为什么分类不够准确？"
+  },
+  "faqAnswerAccuracy1": {
+    "message": "尽量在正文完整、信息充分的页面上使用"
+  },
+  "faqAnswerAccuracy2": {
+    "message": "调整“允许 AI 创建新文件夹”和对应策略"
+  },
+  "faqAnswerAccuracy3": {
+    "message": "检查模型和 API 配置是否正确"
+  },
+  "faqQuestionMissingBookmark": {
+    "message": "为什么找不到刚收藏的书签？"
+  },
+  "faqAnswerMissingBookmark1": {
+    "message": "可以到“书签树”或管理页中查看完整层级"
+  },
+  "faqAnswerMissingBookmark2": {
+    "message": "也可以在“历史记录”里快速打开最近收藏项目"
+  },
+  "faqQuestionFloatingButton": {
+    "message": "为什么悬浮按钮没有出现？"
+  },
+  "faqAnswerFloatingButton1": {
+    "message": "检查设置中是否开启了“显示悬浮智能收藏按钮”"
+  },
+  "faqAnswerFloatingButton2": {
+    "message": "某些网站可能已被加入隐藏列表"
+  },
+  "supportTitle": {
+    "message": "支持作者"
+  },
+  "supportDesc": {
+    "message": "如果这个插件对你有帮助，欢迎打赏支持继续迭代。"
+  },
+  "donationWechat": {
+    "message": "微信打赏码"
+  },
+  "donationAlipay": {
+    "message": "支付宝打赏码"
+  },
+  "donationPlaceholder": {
+    "message": "在这里放你的二维码图片"
+  },
+  "donationFootnote": {
+    "message": "后续只要把这个占位块换成你的微信赞赏码图片，就可以直接用了。"
   },
   "theme": {
     "message": "主题颜色"
