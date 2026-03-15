@@ -4,6 +4,7 @@ import {
   ensureLLMConfiguration,
   LLM_CONFIG_ERROR_CODE,
   isLLMDailyLimitError,
+  isLLMRateLimitError,
   getDailyQuotaStatus,
   DAILY_USAGE_STORAGE_KEY
 } from '../utils/llm.js';
@@ -1910,6 +1911,11 @@ async function handleBulkRenameSelected() {
             control.stop();
             return;
           }
+          if (isLLMRateLimitError(e)) {
+            limitReachedMessage = e.message || 'Provider rate limit reached.';
+            control.stop();
+            return;
+          }
           analysisFailedCount += 1;
         }
       },
@@ -2049,6 +2055,11 @@ async function handleBulkClassifySelected() {
         } catch (e) {
           if (isLLMDailyLimitError(e)) {
             limitReachedMessage = e.message || tr('bulkDailyLimitReached', 'Daily AI request limit reached.');
+            control.stop();
+            return;
+          }
+          if (isLLMRateLimitError(e)) {
+            limitReachedMessage = e.message || 'Provider rate limit reached.';
             control.stop();
             return;
           }

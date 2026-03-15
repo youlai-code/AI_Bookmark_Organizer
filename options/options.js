@@ -1,5 +1,6 @@
 const OFFICIAL_PROXY = 'https://youlainote.cloud';
 import { initI18n, t } from '../utils/i18n.js';
+import { testLLMConnection } from '../utils/llm.js';
 import {
   createBookmarkBackup,
   deleteBookmarkBackup,
@@ -18,6 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await initI18n();
   setupTabs();
   setupAutoSave();
+  setupLlmConnectionTest();
   setupHistoryActions();
   setupBookmarkBackupActions();
   restoreOptions();
@@ -27,6 +29,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   window.addEventListener('i18nChanged', async () => {
     applyTranslations();
+    resetLlmTestStatus();
     resetBookmarkBackupStatus();
     await loadBookmarkBackups();
     loadHistory();
@@ -127,6 +130,71 @@ function setupHistoryActions() {
   document.getElementById('clearHistory')?.addEventListener('click', clearHistory);
 }
 
+function setupLlmConnectionTest() {
+  document.getElementById('testLlmConnection')?.addEventListener('click', () => {
+    void handleTestLlmConnection();
+  });
+}
+
+function getCurrentLlmConfig() {
+  return {
+    llmProvider: document.getElementById('llmProvider')?.value || 'default',
+    apiKey: document.getElementById('apiKey')?.value || '',
+    model: document.getElementById('model')?.value || '',
+    baseUrl: document.getElementById('baseUrl')?.value || '',
+    ollamaHost: document.getElementById('ollamaHost')?.value || '',
+    language: document.getElementById('language')?.value || 'zh_CN'
+  };
+}
+
+function setLlmTestStatus(message, tone = 'muted') {
+  const status = document.getElementById('llmTestStatus');
+  if (!status) return;
+  status.textContent = message || '';
+
+  if (!message || tone === 'muted') {
+    delete status.dataset.state;
+    return;
+  }
+
+  status.dataset.state = tone;
+}
+
+function resetLlmTestStatus() {
+  setLlmTestStatus('');
+}
+
+async function handleTestLlmConnection() {
+  const button = document.getElementById('testLlmConnection');
+  if (!button) return;
+
+  const originalLabel = tt('testConnection', 'Test Connection');
+  button.disabled = true;
+  button.textContent = tt('testingConnection', 'Testing...');
+  setLlmTestStatus(tt('testingConnection', 'Testing...'));
+
+  try {
+    const result = await testLLMConnection(getCurrentLlmConfig());
+    setLlmTestStatus(
+      tt(
+        'connectionTestSuccess',
+        `Connection successful. Received a valid response from ${result.providerName}.`,
+        { provider: result.providerName }
+      ),
+      'success'
+    );
+  } catch (err) {
+    const errorMessage = err?.message || String(err);
+    setLlmTestStatus(
+      tt('connectionTestFailed', `Connection failed: ${errorMessage}`, { error: errorMessage }),
+      'error'
+    );
+  } finally {
+    button.disabled = false;
+    button.textContent = originalLabel;
+  }
+}
+
 function setupAutoSave() {
   const inputs = [
     'llmProvider',
@@ -142,6 +210,7 @@ function setupAutoSave() {
     'language',
     'theme'
   ];
+  const llmInputIds = new Set(['llmProvider', 'apiKey', 'model', 'baseUrl', 'ollamaHost', 'language']);
 
   const debouncedSave = debounce(autoSaveOptions, 800);
 
@@ -151,6 +220,7 @@ function setupAutoSave() {
 
     if (el.tagName === 'SELECT' || el.type === 'checkbox') {
       el.addEventListener('change', () => {
+        if (llmInputIds.has(id)) resetLlmTestStatus();
         if (id === 'llmProvider') updateUIState();
         if (id === 'allowNewFolders') updateStrategyVisibility();
         if (id === 'enableSmartRename') updateRenameLengthVisibility();
@@ -172,6 +242,7 @@ function setupAutoSave() {
     }
 
     el.addEventListener('input', () => {
+      if (llmInputIds.has(id)) resetLlmTestStatus();
       if (id === 'baseUrl') updateUIState();
       if (id === 'renameMaxLength') updateRenameLengthDisplay(el.value);
       debouncedSave();
@@ -258,7 +329,7 @@ function setupBookmarkBackupActions() {
 
 function resetBookmarkBackupStatus() {
   setBookmarkBackupStatus(
-    tt('bookmarkBackupHint', '导入时会先自动创建一份安全备份，再把内容导入到书签栏下的新文件夹。')
+    tt('bookmarkBackupHint', '导入时会先自动创建一份安全备份，并尽量匹配到对应的根目录。')
   );
 }
 
@@ -438,19 +509,25 @@ async function handleImportBookmarksFileChange(event) {
 
   try {
     const html = await file.text();
-    const result = await importBookmarksFromHtml(html, {
-      folderTitle: `${tt('bookmarkImportFolderPrefix', '导入书签')} ${formatBackupTimestamp()}`
-    });
+    const result = await importBookmarksFromHtml(html);
     await loadBookmarkBackups();
     setBookmarkBackupStatus(
-      tt(
-        'bookmarkImportDone',
-        `已导入到“${result.folderTitle}”，共 ${result.importedBookmarks || 0} 个书签。`,
-        {
-          folder: result.folderTitle,
-          count: String(result.importedBookmarks || 0)
-        }
-      ),
+      Array.isArray(result.destinationTitles) && result.destinationTitles.filter(Boolean).length > 1
+        ? tt(
+          'bookmarkImportDoneMultiple',
+          `已导入 ${result.importedBookmarks || 0} 个书签，并自动匹配到对应目录。`,
+          {
+            count: String(result.importedBookmarks || 0)
+          }
+        )
+        : tt(
+          'bookmarkImportDone',
+          `已导入到“${result.destinationTitles?.[0] || result.folderTitle}”，共 ${result.importedBookmarks || 0} 个书签。`,
+          {
+            folder: result.destinationTitles?.[0] || result.folderTitle,
+            count: String(result.importedBookmarks || 0)
+          }
+        ),
       'success'
     );
   } catch (err) {
@@ -562,7 +639,7 @@ function restoreOptions() {
       llmProvider: 'default',
       apiKey: '',
       model: '',
-      baseUrl: OFFICIAL_PROXY,
+      baseUrl: '',
       ollamaHost: '',
       allowNewFolders: false,
       folderCreationLevel: 'weak',
@@ -578,7 +655,10 @@ function restoreOptions() {
       document.getElementById('llmProvider').value = items.llmProvider;
       document.getElementById('apiKey').value = items.apiKey;
       document.getElementById('model').value = items.model;
-      document.getElementById('baseUrl').value = items.baseUrl;
+      const migratedBaseUrl = items.llmProvider !== 'default' && items.baseUrl === OFFICIAL_PROXY
+        ? ''
+        : items.baseUrl;
+      document.getElementById('baseUrl').value = migratedBaseUrl;
       document.getElementById('ollamaHost').value = items.ollamaHost;
 
       let allowAI = true;
@@ -618,12 +698,17 @@ function restoreOptions() {
       document.getElementById('language').value = items.language;
       document.getElementById('theme').value = items.theme || 'auto';
 
+      if (migratedBaseUrl !== items.baseUrl) {
+        chrome.storage.sync.set({ baseUrl: migratedBaseUrl }, () => {});
+      }
+
       applyTheme(items.theme || 'auto');
       renderBlockedList(items.disabledDomains);
       updateUIState();
       updateStrategyVisibility();
       updateRenameLengthVisibility();
       updateNativeBookmarkWarningVisibility();
+      resetLlmTestStatus();
       loadHistory();
       resetBookmarkBackupStatus();
     }
@@ -636,6 +721,7 @@ function updateUIState() {
   const modelGroup = document.getElementById('modelGroup');
   const baseUrlGroup = document.getElementById('baseUrlGroup');
   const ollamaHostGroup = document.getElementById('ollamaHostGroup');
+  const llmConfigActions = document.getElementById('llmConfigActions');
   const proxyStatus = document.getElementById('proxyStatus');
   const defaultModelStatus = document.getElementById('defaultModelStatus');
   const hint = document.getElementById('modelHint');
@@ -645,10 +731,13 @@ function updateUIState() {
   modelGroup.style.display = 'none';
   baseUrlGroup.style.display = 'none';
   ollamaHostGroup.style.display = 'none';
+  if (llmConfigActions) llmConfigActions.style.display = 'flex';
   if (proxyStatus) proxyStatus.style.display = 'none';
   if (defaultModelStatus) defaultModelStatus.style.display = 'none';
 
   if (provider === 'default') {
+    if (llmConfigActions) llmConfigActions.style.display = 'none';
+    resetLlmTestStatus();
     if (defaultModelStatus) defaultModelStatus.style.display = 'block';
     return;
   }
@@ -674,6 +763,14 @@ function updateUIState() {
     modelGroup.style.display = 'block';
     hint.textContent = tt('modelHintGemini', 'gemini-1.5-flash');
     modelInput.placeholder = 'gemini-1.5-flash';
+    return;
+  }
+
+  if (provider === 'zhipu') {
+    apiKeyGroup.style.display = 'block';
+    modelGroup.style.display = 'block';
+    hint.textContent = tt('modelHintZhipu', 'glm-4.7-flash');
+    modelInput.placeholder = 'glm-4.7-flash';
     return;
   }
 

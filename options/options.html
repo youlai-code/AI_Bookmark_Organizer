@@ -124,6 +124,7 @@
                   <option value="deepseek" data-i18n="providerDeepSeek">DeepSeek (官方 API)</option>
                   <option value="chatgpt" data-i18n="providerChatGPT">ChatGPT (OpenAI)</option>
                   <option value="gemini" data-i18n="providerGemini">Gemini (Google API)</option>
+                  <option value="zhipu" data-i18n="providerZhipu">智谱 AI (BigModel)</option>
                 </select>
               </div>
 
@@ -178,6 +179,11 @@
                 <label>Ollama Host</label>
                 <input type="text" id="ollamaHost" placeholder="http://localhost:11434">
                 <div class="hint">默认: http://localhost:11434</div>
+              </div>
+
+              <div class="form-group llm-config-actions" id="llmConfigActions">
+                <button type="button" id="testLlmConnection" class="primary-btn" data-i18n="testConnection">测试连接</button>
+                <div id="llmTestStatus" class="sub-hint llm-test-status" aria-live="polite"></div>
               </div>
             </div>
           </div>

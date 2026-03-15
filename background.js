@@ -23,6 +23,20 @@ class SmartBookmarker {
     this.isImportingBookmarks = false;
   }
 
+  async isImportSuppressed() {
+    const { bookmarkImportState = null } = await chrome.storage.local.get({
+      bookmarkImportState: null
+    });
+
+    if (!bookmarkImportState || typeof bookmarkImportState !== 'object') {
+      return false;
+    }
+
+    const isActive = Boolean(bookmarkImportState.active);
+    const suppressUntil = Number(bookmarkImportState.suppressUntil || 0);
+    return isActive || suppressUntil > Date.now();
+  }
+
   // Check if URL is supported for content extraction
   isSupportedUrl(url) {
     return url && (url.startsWith('http://') || url.startsWith('https://'));
@@ -67,12 +81,12 @@ class SmartBookmarker {
 
       return { success: true, category: classification.category };
 
-    } catch (error) {
-      error('[SmartBookmarker] Failed:', error);
+    } catch (err) {
+      error('[SmartBookmarker] Failed:', err);
       if (isManual && tabId) {
-        this.notifyStatus(tabId, 'error', error.message);
+        this.notifyStatus(tabId, 'error', err.message);
       }
-      return { success: false, error: error.message, errorCode: error?.code || '' };
+      return { success: false, error: err.message, errorCode: err?.code || '' };
 
     } finally {
       this.processingQueue.delete(processId);
@@ -303,6 +317,7 @@ if (chrome.bookmarks.onImportBegan && chrome.bookmarks.onImportEnded) {
 chrome.bookmarks.onCreated.addListener(async (id, bookmark) => {
   if (!bookmark.url) return; // Folder
   if (bookmarker.isImportingBookmarks) return; // Preserve imported bookmark structure
+  if (await bookmarker.isImportSuppressed()) return; // Preserve custom HTML imports
   if (bookmarker.recentlyProcessedUrls.has(bookmark.url)) return; // Created by us
   if (!bookmarker.isSupportedUrl(bookmark.url)) return; // Local file or chrome://
   if (!(await bookmarker.shouldCaptureNativeBookmarkEvents())) return;

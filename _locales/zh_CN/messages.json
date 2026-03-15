@@ -53,6 +53,9 @@
   "providerGemini": {
     "message": "Gemini (Google API)"
   },
+  "providerZhipu": {
+    "message": "智谱 AI (BigModel)"
+  },
   "enabledDefaultModel": {
     "message": "已启用 DeepSeek 模型"
   },
@@ -74,11 +77,42 @@
   "modelHintDeepSeek": {
     "message": "DeepSeek 默认为 deepseek-chat"
   },
+  "modelHintZhipu": {
+    "message": "智谱默认使用 glm-4.7-flash"
+  },
+  "baseUrlHintZhipu": {
+    "message": "默认官方地址为 https://open.bigmodel.cn/api/paas/v4"
+  },
   "baseUrl": {
     "message": "Base URL (可选 - 用于代理)"
   },
   "baseUrlPlaceholder": {
     "message": "https://api.deepseek.com"
+  },
+  "testConnection": {
+    "message": "测试连接"
+  },
+  "testingConnection": {
+    "message": "测试中..."
+  },
+  "connectionTestSuccess": {
+    "message": "连接测试成功，已收到 $PROVIDER$ 的有效响应。",
+    "placeholders": {
+      "provider": {
+        "content": "$1"
+      }
+    }
+  },
+  "connectionTestFailed": {
+    "message": "连接测试失败：$ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "defaultConnectionTestUnsupported": {
+    "message": "默认免费通道当前可能不支持单独测试连接，请直接尝试一次智能收藏来验证是否可用。"
   },
   "officialProxyEnabled": {
     "message": "已启用官方免费通道"

@@ -53,6 +53,9 @@
   "providerGemini": {
     "message": "Gemini (Google API)"
   },
+  "providerZhipu": {
+    "message": "Zhipu AI (BigModel)"
+  },
   "enabledDefaultModel": {
     "message": "Default Model Enabled"
   },
@@ -74,11 +77,42 @@
   "modelHintDeepSeek": {
     "message": "DeepSeek defaults to deepseek-chat"
   },
+  "modelHintZhipu": {
+    "message": "Zhipu defaults to glm-4.7-flash"
+  },
+  "baseUrlHintZhipu": {
+    "message": "Default official endpoint: https://open.bigmodel.cn/api/paas/v4"
+  },
   "baseUrl": {
     "message": "Base URL (Optional - for Proxy)"
   },
   "baseUrlPlaceholder": {
     "message": "https://api.deepseek.com"
+  },
+  "testConnection": {
+    "message": "Test Connection"
+  },
+  "testingConnection": {
+    "message": "Testing..."
+  },
+  "connectionTestSuccess": {
+    "message": "Connection successful. Received a valid response from $PROVIDER$.",
+    "placeholders": {
+      "provider": {
+        "content": "$1"
+      }
+    }
+  },
+  "connectionTestFailed": {
+    "message": "Connection failed: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "defaultConnectionTestUnsupported": {
+    "message": "The default free channel may not support direct connection testing right now. Please try an actual smart bookmark action to verify it."
   },
   "officialProxyEnabled": {
     "message": "Official Free Channel Enabled"
@@ -829,7 +863,7 @@
     "message": "Import HTML"
   },
   "bookmarkBackupHint": {
-    "message": "Importing creates a safety backup first, then imports bookmarks into a new folder under the bookmark bar."
+    "message": "Importing creates a safety backup first, then restores bookmarks into their matching root locations when possible."
   },
   "noBackups": {
     "message": "No backup records yet"
@@ -911,9 +945,6 @@
   "bookmarkImportRunning": {
     "message": "Importing HTML..."
   },
-  "bookmarkImportFolderPrefix": {
-    "message": "Imported"
-  },
   "bookmarkImportDone": {
     "message": "Imported $COUNT$ bookmarks into \"$FOLDER$\".",
     "placeholders": {
@@ -922,6 +953,14 @@
       },
       "count": {
         "content": "$2"
+      }
+    }
+  },
+  "bookmarkImportDoneMultiple": {
+    "message": "Imported $COUNT$ bookmarks and matched them to the appropriate folders.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
       }
     }
   },

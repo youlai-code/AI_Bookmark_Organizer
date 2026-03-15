@@ -1,5 +1,7 @@
 const BOOKMARK_BACKUPS_STORAGE_KEY = 'bookmarkBackups';
 const BOOKMARK_BACKUP_LIMIT = 10;
+const BOOKMARK_IMPORT_STATE_STORAGE_KEY = 'bookmarkImportState';
+const BOOKMARK_IMPORT_SUPPRESS_MS = 60 * 1000;
 
 function generateBackupId() {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -97,6 +99,89 @@ function findImportTargetContainer(rootChildren) {
   return rootChildren.find((node) => node.id === '1') || rootChildren[0] || null;
 }
 
+async function setBookmarkImportState(active) {
+  const state = {
+    active: Boolean(active),
+    updatedAt: Date.now(),
+    suppressUntil: active ? Date.now() + BOOKMARK_IMPORT_SUPPRESS_MS : Date.now() + BOOKMARK_IMPORT_SUPPRESS_MS
+  };
+
+  await chrome.storage.local.set({
+    [BOOKMARK_IMPORT_STATE_STORAGE_KEY]: state
+  });
+}
+
+function normalizeContainerTitle(title) {
+  return String(title || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '');
+}
+
+function normalizeBookmarkUrl(url) {
+  return String(url || '').trim();
+}
+
+function getRootContainerAliases(node) {
+  const title = normalizeContainerTitle(node?.title);
+  const aliases = new Set([title]);
+
+  switch (node?.id) {
+    case '1':
+      [
+        'bookmarkbar',
+        'bookmarktoolbar',
+        'bookmarksbar',
+        'bookmarkstoolbar',
+        'favoritesbar',
+        'toolbar',
+        '收藏夹栏',
+        '书签栏',
+        '书签工具栏',
+        '收藏栏'
+      ].forEach((alias) => aliases.add(normalizeContainerTitle(alias)));
+      break;
+    case '2':
+      [
+        'otherbookmarks',
+        'otherfavorites',
+        'other',
+        '其他收藏夹',
+        '其他书签',
+        '其它收藏夹',
+        '其它书签'
+      ].forEach((alias) => aliases.add(normalizeContainerTitle(alias)));
+      break;
+    case '3':
+      [
+        'mobilebookmarks',
+        'mobilefavorites',
+        'mobile',
+        '移动书签',
+        '手机书签',
+        '移动收藏夹'
+      ].forEach((alias) => aliases.add(normalizeContainerTitle(alias)));
+      break;
+    default:
+      break;
+  }
+
+  return aliases;
+}
+
+function findMatchingRootContainer(node, rootChildren) {
+  if (!node || node.url) {
+    return null;
+  }
+
+  const importedTitle = normalizeContainerTitle(node.title);
+  if (!importedTitle) {
+    return null;
+  }
+
+  return rootChildren.find((rootNode) => getRootContainerAliases(rootNode).has(importedTitle)) || null;
+}
+
 async function getBookmarkRootChildren() {
   const tree = await chrome.bookmarks.getTree();
   const rootChildren = tree?.[0]?.children || [];
@@ -124,7 +209,20 @@ async function createNodesUnderParent(parentId, nodes) {
   let createdFolders = 0;
 
   for (const node of nodes || []) {
+    // eslint-disable-next-line no-await-in-loop
+    const children = await chrome.bookmarks.getChildren(parentId);
+
     if (node.url) {
+      const nodeUrl = normalizeBookmarkUrl(node.url);
+      const existingBookmark = children.find((child) => (
+        Boolean(child.url)
+        && normalizeBookmarkUrl(child.url) === nodeUrl
+      ));
+
+      if (existingBookmark) {
+        continue;
+      }
+
       // eslint-disable-next-line no-await-in-loop
       await chrome.bookmarks.create({
         parentId,
@@ -135,15 +233,24 @@ async function createNodesUnderParent(parentId, nodes) {
       continue;
     }
 
-    // eslint-disable-next-line no-await-in-loop
-    const createdFolder = await chrome.bookmarks.create({
-      parentId,
-      title: sanitizeTitle(node.title)
-    });
-    createdFolders += 1;
+    const folderTitle = sanitizeTitle(node.title);
+    const existingFolder = children.find(
+      (child) => !child.url && sanitizeTitle(child.title) === folderTitle
+    );
+
+    let targetFolderId = existingFolder?.id || null;
+    if (!targetFolderId) {
+      // eslint-disable-next-line no-await-in-loop
+      const createdFolder = await chrome.bookmarks.create({
+        parentId,
+        title: folderTitle
+      });
+      targetFolderId = createdFolder.id;
+      createdFolders += 1;
+    }
 
     // eslint-disable-next-line no-await-in-loop
-    const nestedCounts = await createNodesUnderParent(createdFolder.id, node.children || []);
+    const nestedCounts = await createNodesUnderParent(targetFolderId, node.children || []);
     createdBookmarks += nestedCounts.createdBookmarks;
     createdFolders += nestedCounts.createdFolders;
   }
@@ -424,22 +531,41 @@ export async function importBookmarksFromHtml(htmlText, options = {}) {
     });
   }
 
-  const folderTitle = sanitizeTitle(
-    options.folderTitle,
-    `Imported ${formatBookmarkTimestamp()}`
-  );
+  await setBookmarkImportState(true);
 
-  const createdFolder = await chrome.bookmarks.create({
-    parentId: importTarget.id,
-    title: folderTitle
-  });
+  try {
+    let createdBookmarks = 0;
+    let createdFolders = 0;
+    const destinationTitles = new Set();
 
-  const createdCounts = await createNodesUnderParent(createdFolder.id, nodes);
-  return {
-    backup,
-    folderId: createdFolder.id,
-    folderTitle: createdFolder.title,
-    importedBookmarks: createdCounts.createdBookmarks,
-    importedFolders: createdCounts.createdFolders
-  };
+    for (const node of nodes) {
+      const matchedRoot = findMatchingRootContainer(node, rootChildren);
+      const parentId = matchedRoot?.id || importTarget.id;
+      const targetNodes = matchedRoot ? (node.children || []) : [node];
+
+      if (targetNodes.length === 0) {
+        if (matchedRoot?.title) {
+          destinationTitles.add(matchedRoot.title);
+        }
+        continue;
+      }
+
+      // eslint-disable-next-line no-await-in-loop
+      const createdCounts = await createNodesUnderParent(parentId, targetNodes);
+      createdBookmarks += createdCounts.createdBookmarks;
+      createdFolders += createdCounts.createdFolders;
+      destinationTitles.add(matchedRoot?.title || importTarget.title || 'Bookmarks');
+    }
+
+    return {
+      backup,
+      folderId: importTarget.id,
+      folderTitle: importTarget.title,
+      importedBookmarks: createdBookmarks,
+      importedFolders: createdFolders,
+      destinationTitles: Array.from(destinationTitles)
+    };
+  } finally {
+    await setBookmarkImportState(false);
+  }
 }
