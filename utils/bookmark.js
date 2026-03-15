@@ -47,7 +47,7 @@ export async function getExistingFolderNames() {
   }
 
   const folderPaths = [];
-  collectFolderPaths(bookmarksBar.children, '', folderPaths);
+  collectFolderPaths(bookmarksBar.children, '收藏夹栏', folderPaths);
   return [...new Set(folderPaths)];
 }
 

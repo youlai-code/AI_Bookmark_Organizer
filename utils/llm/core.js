@@ -3,8 +3,8 @@ import { log, error } from '../logger.js';
 import { ensureLLMConfiguration } from './config.js';
 import { DEFAULT_RENAME_LENGTH } from './constants.js';
 import { createProviderRateLimitError } from './errors.js';
-import { parseResponse } from './parsing.js';
-import { generatePrompt, normalizeRenameLength } from './prompt.js';
+import { parseResponse, parseBatchResponse } from './parsing.js';
+import { generatePrompt, generateBatchClassifyPrompt, generateBatchRenamePrompt, normalizeRenameLength, MAX_BATCH_SIZE } from './prompt.js';
 import { executeProviderRequest } from './providers/index.js';
 import { consumeDailyRequestQuota, shouldConsumeDailyQuota } from './quota.js';
 import { normalizeProvider, providerDisplayName, resolveProviderModel } from './shared.js';
@@ -100,3 +100,79 @@ export async function classifyWithLLM(
   log('[LLM] Raw Response:', resultText);
   return parseResponse(resultText, title, enableRename);
 }
+
+export async function classifyBatchWithLLM(
+  bookmarks,
+  existingFolders = [],
+  folderCreationLevel = 'medium',
+  enableRename = false,
+  maxRenameLength = DEFAULT_RENAME_LENGTH
+) {
+  if (!bookmarks || bookmarks.length === 0) {
+    return new Map();
+  }
+
+  const config = await ensureLLMConfiguration();
+  const provider = normalizeProvider(config.llmProvider);
+  const lang = config.language || 'zh_CN';
+  const finalMaxLength = normalizeRenameLength(maxRenameLength);
+
+  if (shouldConsumeDailyQuota(provider)) {
+    await consumeDailyRequestQuota(lang);
+  }
+
+  const prompt = generateBatchClassifyPrompt(
+    lang,
+    bookmarks,
+    existingFolders,
+    folderCreationLevel,
+    enableRename,
+    finalMaxLength
+  );
+  log('[LLM] Batch prompt generated for:', provider, 'batch size:', bookmarks.length);
+
+  let resultText;
+  try {
+    resultText = await requestWithProvider(provider, prompt, config);
+  } catch (err) {
+    error('[LLM] Batch provider call failed:', err);
+    throw err;
+  }
+
+  log('[LLM] Batch Raw Response:', resultText);
+  return parseBatchResponse(resultText, bookmarks, enableRename);
+}
+
+export async function renameBatchWithLLM(
+  bookmarks,
+  maxRenameLength = DEFAULT_RENAME_LENGTH
+) {
+  if (!bookmarks || bookmarks.length === 0) {
+    return new Map();
+  }
+
+  const config = await ensureLLMConfiguration();
+  const provider = normalizeProvider(config.llmProvider);
+  const lang = config.language || 'zh_CN';
+  const finalMaxLength = normalizeRenameLength(maxRenameLength);
+
+  if (shouldConsumeDailyQuota(provider)) {
+    await consumeDailyRequestQuota(lang);
+  }
+
+  const prompt = generateBatchRenamePrompt(lang, bookmarks, finalMaxLength);
+  log('[LLM] Batch rename prompt generated for:', provider, 'batch size:', bookmarks.length);
+
+  let resultText;
+  try {
+    resultText = await requestWithProvider(provider, prompt, config);
+  } catch (err) {
+    error('[LLM] Batch rename provider call failed:', err);
+    throw err;
+  }
+
+  log('[LLM] Batch Rename Raw Response:', resultText);
+  return parseBatchResponse(resultText, bookmarks, true);
+}
+
+export { MAX_BATCH_SIZE };

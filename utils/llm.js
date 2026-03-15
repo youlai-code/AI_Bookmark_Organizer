@@ -7,7 +7,7 @@ export {
   LLM_USAGE_LOGS_STORAGE_KEY
 } from './llm/constants.js';
 export { ensureLLMConfiguration, isLLMConfigError } from './llm/config.js';
-export { classifyWithLLM, testLLMConnection } from './llm/core.js';
+export { classifyWithLLM, classifyBatchWithLLM, renameBatchWithLLM, testLLMConnection, MAX_BATCH_SIZE } from './llm/core.js';
 export {
   isLLMDailyLimitError,
   isLLMRateLimitError

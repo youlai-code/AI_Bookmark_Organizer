@@ -1,12 +1,15 @@
 import { initI18n, t } from '../utils/i18n.js';
 import {
   classifyWithLLM,
+  classifyBatchWithLLM,
+  renameBatchWithLLM,
   ensureLLMConfiguration,
   LLM_CONFIG_ERROR_CODE,
   isLLMDailyLimitError,
   isLLMRateLimitError,
   getDailyQuotaStatus,
-  DAILY_USAGE_STORAGE_KEY
+  DAILY_USAGE_STORAGE_KEY,
+  MAX_BATCH_SIZE
 } from '../utils/llm.js';
 import { createOrGetFolder, moveBookmark, getExistingFolderNames } from '../utils/bookmark.js';
 import { createBookmarkBackup, formatBackupTimestamp } from '../utils/bookmark_backup.js';
@@ -1230,9 +1233,20 @@ function getBookmarkDisplayTitle(bookmarkNode) {
 }
 
 function getFolderDisplayName(folderId) {
-  const meta = nodeMetaMap.get(folderId);
-  if (!meta) return tr('defaultFolder', 'Default');
-  return meta.title || tr('defaultFolder', 'Default');
+  if (!folderId) return tr('defaultFolder', 'Default');
+  
+  const path = [];
+  let currentId = folderId;
+  
+  while (currentId) {
+    const meta = nodeMetaMap.get(currentId);
+    if (!meta) break;
+    
+    path.unshift(meta.title || tr('defaultFolder', 'Default'));
+    currentId = meta.parentId || null;
+  }
+  
+  return path.length > 0 ? path.join('/') : tr('defaultFolder', 'Default');
 }
 
 function normalizeSortNodeLabel(node) {
@@ -1393,11 +1407,77 @@ async function runBulkAction(actionKey, runner) {
   }
 
   try {
+    let progressInterval = null;
+    let currentProgress = 0;
+    let totalItems = 0;
+    let phase = '';
+    
+    // 预测性进度更新函数
+    const startPredictiveProgress = (itemsCount, currentPhase) => {
+      totalItems = itemsCount;
+      phase = currentPhase;
+      // 不要重置currentProgress，保持当前进度值
+      
+      // 计算批次数量
+      const batchCount = Math.ceil(totalItems / MAX_BATCH_SIZE);
+      
+      // 清除之前的定时器
+      if (progressInterval) {
+        clearInterval(progressInterval);
+      }
+      
+      // 开始预测性进度更新
+      progressInterval = setInterval(() => {
+        // 计算当前应该处理到第几批
+        const currentBatch = Math.floor(currentProgress / (100 / batchCount));
+        // 计算当前批次的最大进度
+        const maxProgressForCurrentBatch = Math.min(100, (currentBatch + 1) * (100 / batchCount) - 1);
+        
+        if (currentProgress < maxProgressForCurrentBatch) {
+          // 每1000毫秒更新1%的进度
+          currentProgress += 1;
+          if (summaryEl) {
+            summaryEl.textContent = formatBulkProgress(actionKey, phase, Math.floor((currentProgress / 100) * totalItems), totalItems);
+          }
+        }
+      }, 1000);
+      
+      // 立即更新一次进度，避免处理时间短导致进度条不动
+      if (summaryEl) {
+        summaryEl.textContent = formatBulkProgress(actionKey, phase, Math.floor((currentProgress / 100) * totalItems), totalItems);
+      }
+    };
+    
+    // 停止预测性进度更新
+    const stopPredictiveProgress = () => {
+      if (progressInterval) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+      }
+    };
+
     const reportProgress = (phase, current, total) => {
       if (!summaryEl) return;
+      
+      // 停止预测性进度
+      stopPredictiveProgress();
+      
+      // 更新实际进度
       summaryEl.textContent = formatBulkProgress(actionKey, phase, current, total);
+      
+      // 更新当前进度值
+      currentProgress = (current / total) * 100;
+      
+      // 如果还没完成，重新开始预测性进度
+      if (current < total) {
+        startPredictiveProgress(total, phase);
+      }
     };
+    
     await runner(reportProgress);
+    
+    // 确保停止预测性进度
+    stopPredictiveProgress();
   } catch (err) {
     showBulkResult((t('bulkActionFailed') || '批量操作失败：') + (err?.message || err));
   } finally {
@@ -1880,50 +1960,74 @@ async function handleBulkRenameSelected() {
     const renamePlanSlots = new Array(bookmarks.length).fill(null);
     let analysisFailedCount = 0;
     let limitReachedMessage = '';
+    let processedCount = 0;
 
-    await runWithConcurrencyPool(
-      bookmarks,
-      async (bm, index, control) => {
-        if (control.isStopped()) return;
-        try {
-          const result = await classifyWithLLM(
-            bm.title || '',
-            bm.url || '',
-            { description: '', keywords: '', body: '' },
-            [],
-            'off',
-            true,
-            renameMaxLength
-          );
+    // 获取每日配额状态
+    const quotaStatus = await getDailyQuotaStatus();
+    const remainingQuota = quotaStatus.remaining || 0;
 
-          const newTitle = (result?.title || '').trim();
-          if (newTitle && newTitle !== bm.title) {
-            renamePlanSlots[index] = {
+    // 如果剩余配额不足，只处理前 remainingQuota 个数据
+    let effectiveBookmarks = bookmarks;
+    if (remainingQuota > 0 && remainingQuota < bookmarks.length) {
+      effectiveBookmarks = bookmarks.slice(0, remainingQuota);
+      limitReachedMessage = tr('bulkDailyLimitReached', `每日免费额度仅剩 ${remainingQuota} 次，已处理前 ${effectiveBookmarks.length} 个书签。`);
+    }
+
+    const batches = [];
+    for (let i = 0; i < effectiveBookmarks.length; i += MAX_BATCH_SIZE) {
+      batches.push(effectiveBookmarks.slice(i, i + MAX_BATCH_SIZE));
+    }
+
+    // 开始处理时立即显示预测性进度
+    reportProgress('analyze', 0, effectiveBookmarks.length);
+
+    for (let batchIdx = 0; batchIdx < batches.length; batchIdx++) {
+      if (limitReachedMessage) break;
+
+      const batch = batches[batchIdx];
+      const batchStartIdx = batchIdx * MAX_BATCH_SIZE;
+
+      try {
+        const batchBookmarks = batch.map(bm => ({
+          title: bm.title || '',
+          url: bm.url || ''
+        }));
+
+        const results = await renameBatchWithLLM(batchBookmarks, renameMaxLength);
+
+        for (let i = 0; i < batch.length; i++) {
+          const bm = batch[i];
+          // 在原始书签数组中找到对应的索引
+          const globalIdx = bookmarks.findIndex(b => b.id === bm.id);
+          const result = results.get(i);
+
+          if (result && result.title && result.title !== bm.title) {
+            renamePlanSlots[globalIdx] = {
               id: bm.id,
               oldTitle: getBookmarkDisplayTitle(bm),
-              newTitle,
+              newTitle: result.title,
               url: bm.url || ''
             };
           }
-        } catch (e) {
-          if (isLLMDailyLimitError(e)) {
-            limitReachedMessage = e.message || tr('bulkDailyLimitReached', 'Daily AI request limit reached.');
-            control.stop();
-            return;
-          }
-          if (isLLMRateLimitError(e)) {
-            limitReachedMessage = e.message || 'Provider rate limit reached.';
-            control.stop();
-            return;
-          }
+        }
+      } catch (e) {
+        if (isLLMDailyLimitError(e)) {
+          limitReachedMessage = e.message || tr('bulkDailyLimitReached', 'Daily AI request limit reached.');
+          break;
+        }
+        if (isLLMRateLimitError(e)) {
+          limitReachedMessage = e.message || 'Provider rate limit reached.';
+          break;
+        }
+        for (let i = 0; i < batch.length; i++) {
           analysisFailedCount += 1;
         }
-      },
-      {
-        concurrency: BULK_CONCURRENCY,
-        onProgress: (current, total) => reportProgress('analyze', current, total)
       }
-    );
+
+      processedCount += batch.length;
+      // 批次完成后更新实际进度
+      reportProgress('analyze', processedCount, effectiveBookmarks.length);
+    }
 
     const renamePlans = renamePlanSlots.filter(Boolean);
 
@@ -2023,54 +2127,85 @@ async function handleBulkClassifySelected() {
     const classifyPlanSlots = new Array(bookmarks.length).fill(null);
     let analysisFailedCount = 0;
     let limitReachedMessage = '';
+    let processedCount = 0;
 
-    await runWithConcurrencyPool(
-      bookmarks,
-      async (bm, index, control) => {
-        if (control.isStopped()) return;
-        try {
-          const result = await classifyWithLLM(
-            bm.title || '',
-            bm.url || '',
-            { description: '', keywords: '', body: '' },
-            existingFolders,
-            folderCreationLevel,
-            false,
-            renameMaxLength
-          );
+    // 获取每日配额状态
+    const quotaStatus = await getDailyQuotaStatus();
+    const remainingQuota = quotaStatus.remaining || 0;
 
-          const category = (result?.category || '').trim();
-          if (!category) throw new Error('Empty category');
+    // 如果剩余配额不足，只处理前 remainingQuota 个数据
+    let effectiveBookmarks = bookmarks;
+    if (remainingQuota > 0 && remainingQuota < bookmarks.length) {
+      effectiveBookmarks = bookmarks.slice(0, remainingQuota);
+      limitReachedMessage = tr('bulkDailyLimitReached', `每日免费额度仅剩 ${remainingQuota} 次，已处理前 ${effectiveBookmarks.length} 个书签。`);
+    }
 
-          const currentFolder = getFolderDisplayName(bm.parentId);
-          if (currentFolder !== category) {
-            classifyPlanSlots[index] = {
-              id: bm.id,
-              title: getBookmarkDisplayTitle(bm),
-              fromFolder: currentFolder,
-              toFolder: category,
-              url: bm.url || ''
-            };
+    const batches = [];
+    for (let i = 0; i < effectiveBookmarks.length; i += MAX_BATCH_SIZE) {
+      batches.push(effectiveBookmarks.slice(i, i + MAX_BATCH_SIZE));
+    }
+
+    // 开始处理时立即显示预测性进度
+    reportProgress('analyze', 0, effectiveBookmarks.length);
+
+    for (let batchIdx = 0; batchIdx < batches.length; batchIdx++) {
+      if (limitReachedMessage) break;
+
+      const batch = batches[batchIdx];
+      const batchStartIdx = batchIdx * MAX_BATCH_SIZE;
+
+      try {
+        const batchBookmarks = batch.map(bm => ({
+          title: bm.title || '',
+          url: bm.url || ''
+        }));
+
+        const results = await classifyBatchWithLLM(
+          batchBookmarks,
+          existingFolders,
+          folderCreationLevel,
+          false,
+          renameMaxLength
+        );
+
+        for (let i = 0; i < batch.length; i++) {
+          const bm = batch[i];
+          // 在原始书签数组中找到对应的索引
+          const globalIdx = bookmarks.findIndex(b => b.id === bm.id);
+          const result = results.get(i);
+
+          if (result && result.category) {
+            const category = result.category.trim();
+            const currentFolder = getFolderDisplayName(bm.parentId);
+            if (currentFolder !== category) {
+              classifyPlanSlots[globalIdx] = {
+                id: bm.id,
+                title: getBookmarkDisplayTitle(bm),
+                fromFolder: currentFolder,
+                toFolder: category,
+                url: bm.url || ''
+              };
+            }
           }
-        } catch (e) {
-          if (isLLMDailyLimitError(e)) {
-            limitReachedMessage = e.message || tr('bulkDailyLimitReached', 'Daily AI request limit reached.');
-            control.stop();
-            return;
-          }
-          if (isLLMRateLimitError(e)) {
-            limitReachedMessage = e.message || 'Provider rate limit reached.';
-            control.stop();
-            return;
-          }
+        }
+      } catch (e) {
+        if (isLLMDailyLimitError(e)) {
+          limitReachedMessage = e.message || tr('bulkDailyLimitReached', 'Daily AI request limit reached.');
+          break;
+        }
+        if (isLLMRateLimitError(e)) {
+          limitReachedMessage = e.message || 'Provider rate limit reached.';
+          break;
+        }
+        for (let i = 0; i < batch.length; i++) {
           analysisFailedCount += 1;
         }
-      },
-      {
-        concurrency: BULK_CONCURRENCY,
-        onProgress: (current, total) => reportProgress('analyze', current, total)
       }
-    );
+
+      processedCount += batch.length;
+      // 批次完成后更新实际进度
+      reportProgress('analyze', processedCount, effectiveBookmarks.length);
+    }
 
     const classifyPlans = classifyPlanSlots.filter(Boolean);
 
