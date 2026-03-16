@@ -1,4 +1,7 @@
-const OFFICIAL_PROXY = 'https://youlainote.cloud';
+import { OFFICIAL_PROXY as CONFIG_OFFICIAL_PROXY } from '../config/app.config.js';
+
+const OFFICIAL_PROXY = CONFIG_OFFICIAL_PROXY;
+const OFFICIAL_PROXY_ALIASES = new Set([OFFICIAL_PROXY]);
 import { initI18n, t } from '../utils/i18n.js';
 import { testLLMConnection } from '../utils/llm.js';
 import {
@@ -14,6 +17,7 @@ import {
 const MIN_RENAME_LENGTH = 4;
 const MAX_RENAME_LENGTH = 20;
 const DEFAULT_RENAME_LENGTH = 12;
+const USAGE_STATS_STORAGE_KEY = 'usageStats';
 
 document.addEventListener('DOMContentLoaded', async () => {
   await initI18n();
@@ -21,11 +25,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupAutoSave();
   setupLlmConnectionTest();
   setupHistoryActions();
+  setupUsageStatsActions();
   setupBookmarkBackupActions();
   restoreOptions();
   applyTranslations();
   resetBookmarkBackupStatus();
   await loadBookmarkBackups();
+  void loadUsageStats({ silent: true });
 
   window.addEventListener('i18nChanged', async () => {
     applyTranslations();
@@ -33,6 +39,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     resetBookmarkBackupStatus();
     await loadBookmarkBackups();
     loadHistory();
+    void loadUsageStats({ silent: true });
     chrome.storage.sync.get({ disabledDomains: [] }, (items) => {
       renderBlockedList(items.disabledDomains);
     });
@@ -117,6 +124,7 @@ function updatePageTitle(tabId) {
     bookmarks: tt('sectionBookmarkBackup', '书签备份'),
     blocked: tt('navBlocked', '屏蔽规则'),
     history: tt('navHistory', '历史记录'),
+    usage: tt('navUsageStats', '使用统计'),
     about: tt('navAbout', '关于')
   };
   const titleText = titleMap[tabId] || tt('navSettings', '设置');
@@ -128,6 +136,37 @@ function updatePageTitle(tabId) {
 
 function setupHistoryActions() {
   document.getElementById('clearHistory')?.addEventListener('click', clearHistory);
+}
+
+function setupUsageStatsActions() {
+  document.getElementById('usageStatsRefresh')?.addEventListener('click', () => {
+    void loadUsageStats({ silent: false });
+  });
+
+  document.getElementById('usageStatsClear')?.addEventListener('click', () => {
+    openUsageStatsConfirmModal();
+  });
+
+  document.getElementById('usageStatsConfirmCancel')?.addEventListener('click', () => {
+    closeUsageStatsConfirmModal();
+  });
+
+  document.getElementById('usageStatsConfirmOk')?.addEventListener('click', () => {
+    void clearUsageStats();
+  });
+
+  document.getElementById('usageStatsConfirmModal')?.addEventListener('click', (event) => {
+    if (event.target?.id === 'usageStatsConfirmModal') {
+      closeUsageStatsConfirmModal();
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    const modal = document.getElementById('usageStatsConfirmModal');
+    if (modal?.hasAttribute('hidden')) return;
+    closeUsageStatsConfirmModal();
+  });
 }
 
 function setupLlmConnectionTest() {
@@ -308,8 +347,120 @@ function setupTabs() {
       });
       document.getElementById(tabId)?.classList.add('active');
       updatePageTitle(tabId);
+
+      if (tabId === 'usage') {
+        void loadUsageStats({ silent: true });
+      }
     });
   });
+}
+
+function setUsageStatsStatus(message, tone = 'muted') {
+  const status = document.getElementById('usageStatsStatus');
+  if (!status) return;
+  status.textContent = message || '';
+
+  if (!message || tone === 'muted') {
+    delete status.dataset.state;
+    return;
+  }
+
+  status.dataset.state = tone;
+}
+
+function normalizeUsageStatCount(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return 0;
+  return Math.max(0, Math.floor(n));
+}
+
+function normalizeUsageStats(raw) {
+  const obj = raw && typeof raw === 'object' ? raw : {};
+  const lastResetAt = obj.lastResetAt == null ? null : Number(obj.lastResetAt);
+  const updatedAt = obj.updatedAt == null ? null : Number(obj.updatedAt);
+
+  return {
+    aiClassifyCount: normalizeUsageStatCount(obj.aiClassifyCount),
+    aiRenameCount: normalizeUsageStatCount(obj.aiRenameCount),
+    invalidDetectedCount: normalizeUsageStatCount(obj.invalidDetectedCount),
+    lastResetAt: Number.isFinite(lastResetAt) ? lastResetAt : null,
+    updatedAt: Number.isFinite(updatedAt) ? updatedAt : null
+  };
+}
+
+function formatUsageStatsTime(ts) {
+  if (!ts) return tt('usageStatsNeverReset', '未清零过');
+  try {
+    return new Date(ts).toLocaleString();
+  } catch {
+    return String(ts);
+  }
+}
+
+function openUsageStatsConfirmModal() {
+  const modal = document.getElementById('usageStatsConfirmModal');
+  if (!modal) return;
+  modal.removeAttribute('hidden');
+  const ok = document.getElementById('usageStatsConfirmOk');
+  ok?.focus();
+}
+
+function closeUsageStatsConfirmModal() {
+  const modal = document.getElementById('usageStatsConfirmModal');
+  if (!modal) return;
+  modal.setAttribute('hidden', '');
+}
+
+async function loadUsageStats({ silent }) {
+  if (!silent) {
+    setUsageStatsStatus(tt('usageStatsLoading', '读取中...'));
+  } else {
+    setUsageStatsStatus('');
+  }
+
+  try {
+    const stored = await chrome.storage.local.get({ [USAGE_STATS_STORAGE_KEY]: null });
+    const stats = normalizeUsageStats(stored?.[USAGE_STATS_STORAGE_KEY]);
+
+    document.getElementById('usageStatAiClassifyValue').textContent = String(stats.aiClassifyCount);
+    document.getElementById('usageStatAiRenameValue').textContent = String(stats.aiRenameCount);
+    document.getElementById('usageStatInvalidDetectedValue').textContent = String(stats.invalidDetectedCount);
+
+    if (!silent) {
+      setUsageStatsStatus(tt('usageStatsLoaded', '已刷新'), 'success');
+      setTimeout(() => setUsageStatsStatus(''), 1500);
+    }
+  } catch (err) {
+    const message = err?.message || String(err);
+    setUsageStatsStatus(tt('usageStatsLoadFailed', `读取失败：${message}`, { error: message }), 'error');
+  }
+}
+
+async function clearUsageStats() {
+  const okButton = document.getElementById('usageStatsConfirmOk');
+  if (okButton) okButton.disabled = true;
+
+  try {
+    const now = Date.now();
+    await chrome.storage.local.set({
+      [USAGE_STATS_STORAGE_KEY]: {
+        aiClassifyCount: 0,
+        aiRenameCount: 0,
+        invalidDetectedCount: 0,
+        lastResetAt: now,
+        updatedAt: now
+      }
+    });
+
+    closeUsageStatsConfirmModal();
+    setUsageStatsStatus(tt('usageStatsCleared', '已清零'), 'success');
+    void loadUsageStats({ silent: true });
+  } catch (err) {
+    const message = err?.message || String(err);
+    setUsageStatsStatus(tt('usageStatsClearFailed', `清零失败：${message}`, { error: message }), 'error');
+  } finally {
+    if (okButton) okButton.disabled = false;
+  }
 }
 
 function setupBookmarkBackupActions() {
@@ -655,7 +806,8 @@ function restoreOptions() {
       document.getElementById('llmProvider').value = items.llmProvider;
       document.getElementById('apiKey').value = items.apiKey;
       document.getElementById('model').value = items.model;
-      const migratedBaseUrl = items.llmProvider !== 'default' && items.baseUrl === OFFICIAL_PROXY
+      const normalizedBaseUrl = String(items.baseUrl || '').trim().replace(/\/+$/, '');
+      const migratedBaseUrl = items.llmProvider !== 'default' && OFFICIAL_PROXY_ALIASES.has(normalizedBaseUrl)
         ? ''
         : items.baseUrl;
       document.getElementById('baseUrl').value = migratedBaseUrl;

@@ -9,7 +9,7 @@ import { callZhipu } from './zhipu.js';
 export async function executeProviderRequest(provider, prompt, config) {
   switch (provider) {
     case 'deepseek':
-      return await callDeepSeek(prompt, config.apiKey, config.model, config.baseUrl);
+      return await callDeepSeek(prompt, config.apiKey, config.model, config.baseUrl, 'deepseek');
     case 'chatgpt':
       return await callChatGPT(prompt, config.apiKey, config.model, config.baseUrl);
     case 'gemini':
@@ -22,6 +22,6 @@ export async function executeProviderRequest(provider, prompt, config) {
       return await callDoubao(prompt, config.apiKey, config.model);
     case 'default':
     default:
-      return await callDeepSeek(prompt, '', config.model, OFFICIAL_PROXY);
+      return await callDeepSeek(prompt, '', config.model, OFFICIAL_PROXY, 'default');
   }
 }

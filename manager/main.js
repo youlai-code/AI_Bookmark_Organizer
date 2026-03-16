@@ -2012,7 +2012,7 @@ async function handleBulkRenameSelected() {
         }
       } catch (e) {
         if (isLLMDailyLimitError(e)) {
-          limitReachedMessage = e.message || tr('bulkDailyLimitReached', 'Daily AI request limit reached.');
+          limitReachedMessage = tr('bulkDailyLimitReached', 'Daily AI quota is insufficient.');
           break;
         }
         if (isLLMRateLimitError(e)) {
@@ -2190,7 +2190,7 @@ async function handleBulkClassifySelected() {
         }
       } catch (e) {
         if (isLLMDailyLimitError(e)) {
-          limitReachedMessage = e.message || tr('bulkDailyLimitReached', 'Daily AI request limit reached.');
+          limitReachedMessage = tr('bulkDailyLimitReached', 'Daily AI quota is insufficient.');
           break;
         }
         if (isLLMRateLimitError(e)) {

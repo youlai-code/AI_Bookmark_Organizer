@@ -17,21 +17,22 @@ export function shouldConsumeDailyQuota(provider) {
   return provider === 'default';
 }
 
-export async function consumeDailyRequestQuota(lang, limit = DAILY_REQUEST_LIMIT) {
+export async function consumeDailyRequestQuota(lang, limit = DAILY_REQUEST_LIMIT, units = 1) {
   const today = getLocalDateKey();
   const data = await chrome.storage.local.get(DAILY_USAGE_STORAGE_KEY);
   const saved = data[DAILY_USAGE_STORAGE_KEY];
+  const safeUnits = Math.max(1, Number(units) || 1);
 
   let count = 0;
   if (saved && saved.date === today) {
     count = Number(saved.count) || 0;
   }
 
-  if (count >= limit) {
+  if (count + safeUnits > limit) {
     throw createDailyLimitError(lang, limit, count);
   }
 
-  const nextCount = count + 1;
+  const nextCount = count + safeUnits;
   await chrome.storage.local.set({
     [DAILY_USAGE_STORAGE_KEY]: {
       date: today,

@@ -1,6 +1,9 @@
-import { DAILY_REQUEST_LIMIT as CONFIG_DAILY_REQUEST_LIMIT } from '../../config/app.config.js';
+import {
+  DAILY_REQUEST_LIMIT as CONFIG_DAILY_REQUEST_LIMIT,
+  OFFICIAL_PROXY as CONFIG_OFFICIAL_PROXY
+} from '../../config/app.config.js';
 
-export const OFFICIAL_PROXY = 'https://youlainote.cloud';
+export const OFFICIAL_PROXY = CONFIG_OFFICIAL_PROXY;
 export const DEFAULT_TIMEOUT = 20000;
 export const MAX_RETRIES = 1;
 export const RETRY_DELAY = 1000;

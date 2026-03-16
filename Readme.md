@@ -119,21 +119,103 @@
 
 ## 开发说明
 
-### 项目结构
+### 架构概览
+
+扩展的主流程围绕“触发 → 内容提取 → LLM 分类/重命名 → 写入书签 → 记录历史 → UI 反馈”展开：
+
+- 触发入口
+  - 弹窗触发：[popup/popup.js](popup/popup.js) 发送 `TRIGGER_CLASSIFICATION_FROM_POPUP` 给后台
+  - 悬浮按钮触发：[content.js](content.js) 发送 `AI_BOOKMARK` 给后台
+  - 原生收藏接管：[background.js](background.js) 监听 `chrome.bookmarks.onCreated`（需要在设置里开启）
+- 后台编排：[background.js](background.js)
+  - `extractContent()` 用 `chrome.scripting.executeScript` 在页面内提取 description/keywords/body（做超时保护）
+  - `classify()` 调用 LLM 工具链生成 prompt、请求模型、解析结果
+  - `save()` 通过书签工具创建/复用文件夹并移动/创建书签，同时写入历史
+  - 反馈：向内容脚本发送 `SHOW_TOAST` 展示结果
+- 关键“防重复/防误触发”机制
+  - `recentlyProcessedUrls`：避免扩展自己创建的书签再次被 `onCreated` 处理
+  - `bookmarkImportState`：导入 HTML/恢复备份时短时间抑制原生事件，避免破坏导入结构
+
+### 目录结构
 
 ```text
 AI_Bookmark_Organizer/
-├─ _locales/           # 多语言文案
-├─ icons/              # 扩展图标与资源
-├─ manager/            # 书签管理页
-├─ options/            # 设置页 / 备份页 / 关于页
-├─ popup/              # 弹窗入口
-├─ utils/              # i18n、LLM、备份等通用工具
-├─ background.js       # 后台服务逻辑
-├─ content.js          # 页面注入逻辑
-├─ manifest.json       # Chrome 扩展清单
-└─ manifest.firefox.json
+├─ manifest.json            # Chrome MV3 清单
+├─ manifest.firefox.json    # Firefox 适配清单
+├─ background.js            # Service Worker：流程编排与消息中枢
+├─ content.js               # 内容脚本：悬浮按钮/Toast 与页面内交互
+├─ content.css              # 内容脚本样式
+├─ popup/                   # 工具栏弹窗：手动触发、快速查看历史/配额
+├─ options/                 # 设置页：模型配置、偏好、备份、关于等
+├─ manager/                 # 管理页：书签树浏览/搜索/批量分类/批量重命名
+├─ utils/                   # 共享工具（书签、历史、i18n、LLM 等）
+│  ├─ bookmark.js           # 书签文件夹路径枚举/按路径创建/移动书签
+│  ├─ bookmark_backup.js    # 备份/恢复/HTML 导入导出与导入抑制状态
+│  ├─ history.js            # 收藏历史（chrome.storage.local）
+│  ├─ i18n.js               # 扩展页 i18n 初始化与文案替换
+│  └─ llm/                  # LLM 工具链（prompt / providers / parsing / quota）
+├─ config/                  # 运行时配置（默认模型日配额、官方代理）
+└─ scripts/                 # 打包脚本（Chrome/Firefox）
 ```
+
+### 模块职责
+
+- 后台（消息与流程）：[background.js](background.js)
+  - 统一接收触发请求（popup/content/onCreated），执行内容提取与智能分类，并写入书签/历史
+- 内容脚本（页面入口）：[content.js](content.js)、[content.css](content.css)
+  - 提供悬浮按钮与 Toast；通过消息调用后台；接受后台 `SHOW_TOAST` 进行反馈
+- 弹窗页（轻量操作台）：[popup/popup.js](popup/popup.js)
+  - 手动触发智能收藏；展示最近历史与默认模型日配额状态
+- 设置页（配置中心）：[options/options.js](options/options.js)
+  - 管理模型与偏好开关、隐藏站点、备份导入导出等
+- 管理页（书签树与批处理）：[manager/main.js](manager/main.js)
+  - 书签树渲染/搜索/拖拽；批量分类与批量重命名（使用同一套 LLM 工具链）
+
+### LLM 工具链
+
+LLM 相关逻辑集中在 [utils/llm](utils/llm)：
+
+- 入口聚合：[utils/llm.js](utils/llm.js)
+- 主流程：[utils/llm/core.js](utils/llm/core.js)
+  - `classifyWithLLM()`：单条分类/可选重命名
+  - `classifyBatchWithLLM()`：批量分类
+  - `renameBatchWithLLM()`：批量重命名
+- Prompt 构造：[utils/llm/prompt.js](utils/llm/prompt.js)
+- Provider 适配：[utils/llm/providers](utils/llm/providers)
+  - 通过统一分发层调用不同模型（DeepSeek/ChatGPT/Gemini/豆包/Ollama/智谱等）
+- 响应解析：[utils/llm/parsing.js](utils/llm/parsing.js)
+  - 支持从文本中提取 JSON；批量时支持按 `index` 映射或按顺序回填
+- 配额控制：[utils/llm/quota.js](utils/llm/quota.js)
+  - 默认模型（`llmProvider=default`）会消耗本地日配额；其它 provider 由各自平台配额控制
+
+### 消息协议（前端页 ↔ 后台 ↔ 内容脚本）
+
+- popup → background：`TRIGGER_CLASSIFICATION_FROM_POPUP`
+  - 请求字段：`tabId/url/title`
+- content → background：`AI_BOOKMARK`
+  - 请求字段：`data: { title, url, content }`
+- background → content：`SHOW_TOAST`
+  - 字段：`message/status`
+
+对应实现见：[background.js](background.js)、[popup/popup.js](popup/popup.js)、[content.js](content.js)。
+
+### 存储约定（核心键）
+
+- chrome.storage.sync（同步配置，跨设备）
+  - `llmProvider/apiKey/model/ollamaHost/baseUrl/language`
+  - `allowNewFolders/folderCreationLevel/enableSmartRename/renameMaxLength`
+  - `captureNativeBookmarkEvents/showFloatingButton/disabledDomains` 等偏好项
+- chrome.storage.local（本地数据）
+  - `history`：最近收藏记录（默认保留 100 条）[utils/history.js](utils/history.js)
+  - `bookmarkBackups`：书签备份列表 [utils/bookmark_backup.js](utils/bookmark_backup.js)
+  - `bookmarkImportState`：导入/恢复期间的抑制状态（防止原生 onCreated 自动分类）[utils/bookmark_backup.js](utils/bookmark_backup.js)
+  - `llmDailyUsage`：默认模型日配额计数 [utils/llm/quota.js](utils/llm/quota.js)
+
+### 打包发布
+
+- Windows 一键打包入口：`scripts/package.cmd`（Chrome）、`scripts/package-firefox.cmd`（Firefox）
+- PowerShell 细节与 ZIP 产物： [scripts/package.ps1](scripts/package.ps1)
+- Firefox 上架/打包注意事项： [FIREFOX_PACKAGING.md](FIREFOX_PACKAGING.md)
 
 ### 技术栈
 

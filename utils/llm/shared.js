@@ -1,5 +1,7 @@
 import { OFFICIAL_PROXY } from './constants.js';
 
+const OFFICIAL_PROXY_ALIASES = new Set([OFFICIAL_PROXY]);
+
 export function normalizeProvider(provider) {
   return provider || 'default';
 }
@@ -8,11 +10,13 @@ export function normalizeConfiguredBaseUrl(provider, configuredBaseUrl) {
   const value = String(configuredBaseUrl || '').trim();
   if (!value) return '';
 
-  if (provider !== 'default' && value === OFFICIAL_PROXY) {
+  const normalized = value.replace(/\/+$/, '');
+
+  if (provider !== 'default' && OFFICIAL_PROXY_ALIASES.has(normalized)) {
     return '';
   }
 
-  return value;
+  return normalized;
 }
 
 export function isBlank(value) {

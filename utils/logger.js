@@ -1,4 +1,4 @@
-const DEBUG = false;
+const DEBUG = true;
 
 export function log(...args) {
   if (DEBUG) console.log(...args);

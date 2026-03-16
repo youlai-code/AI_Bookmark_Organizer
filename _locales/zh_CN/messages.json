@@ -23,6 +23,9 @@
   "navHistory": {
     "message": "历史记录"
   },
+  "navUsageStats": {
+    "message": "使用统计"
+  },
   "navAbout": {
     "message": "关于"
   },
@@ -37,6 +40,85 @@
   },
   "sectionAiConfig": {
     "message": "AI 模型配置"
+  },
+  "sectionUsageStats": {
+    "message": "使用统计"
+  },
+  "usageStatsRefresh": {
+    "message": "刷新"
+  },
+  "usageStatAiClassify": {
+    "message": "AI 分类次数"
+  },
+  "usageStatAiRename": {
+    "message": "AI 重命名次数"
+  },
+  "usageStatInvalidDetected": {
+    "message": "检测失效数量"
+  },
+  "usageStatAiClassifyHint": {
+    "message": "每次发起分类请求计 1 次（失败也计数）"
+  },
+  "usageStatAiRenameHint": {
+    "message": "仅实际发生标题变化的条目计数"
+  },
+  "usageStatInvalidDetectedHint": {
+    "message": "疑似失效条目累计，与是否删除无关"
+  },
+  "usageStatsStorageLabel": {
+    "message": "存储位置"
+  },
+  "usageStatsUpdatedAtLabel": {
+    "message": "更新时间"
+  },
+  "usageStatsLastResetAtLabel": {
+    "message": "最近清零"
+  },
+  "usageStatsClear": {
+    "message": "清零统计"
+  },
+  "usageStatsClearHint": {
+    "message": "清零只影响此处统计展示，不影响书签与历史记录。"
+  },
+  "usageStatsConfirmTitle": {
+    "message": "确认清零使用统计？"
+  },
+  "usageStatsConfirmDesc": {
+    "message": "此操作不可撤销。"
+  },
+  "usageStatsCancel": {
+    "message": "取消"
+  },
+  "usageStatsConfirm": {
+    "message": "确认清零"
+  },
+  "usageStatsNeverReset": {
+    "message": "未清零过"
+  },
+  "usageStatsLoading": {
+    "message": "读取中..."
+  },
+  "usageStatsLoaded": {
+    "message": "已刷新"
+  },
+  "usageStatsLoadFailed": {
+    "message": "读取失败：$ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "usageStatsCleared": {
+    "message": "已清零"
+  },
+  "usageStatsClearFailed": {
+    "message": "清零失败：$ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   },
   "llmProvider": {
     "message": "LLM 提供商"
@@ -441,6 +523,21 @@
   "faqAnswerFloatingButton2": {
     "message": "某些网站可能已被加入隐藏列表"
   },
+  "faqQuestionUnlimitedBulk": {
+    "message": "如何无限量批量处理书签？"
+  },
+  "faqAnswerUnlimitedBulk1": {
+    "message": "由于 AI 模型成本问题，您可以配置自己的 AI 模型（如 DeepSeek API）来获得无限次数。"
+  },
+  "faqQuestionPrivacy": {
+    "message": "关于隐私安全"
+  },
+  "faqAnswerPrivacy1": {
+    "message": "我们仅提取必要的网页信息用于 AI 分类，不会收集您的个人数据。"
+  },
+  "faqAnswerPrivacyLink": {
+    "message": "查看隐私策略文档"
+  },
   "supportTitle": {
     "message": "支持作者"
   },
@@ -778,7 +875,7 @@
     }
   },
   "bulkDailyLimitReached": {
-    "message": "今日 AI 请求次数已达上限。"
+    "message": "今日AI请求次数不足。"
   },
   "dailyLimitReached": {
     "message": "今日 AI 请求次数已达上限（$LIMIT$），请明天再试。",

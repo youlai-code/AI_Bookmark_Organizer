@@ -118,7 +118,7 @@ export async function classifyBatchWithLLM(
   const finalMaxLength = normalizeRenameLength(maxRenameLength);
 
   if (shouldConsumeDailyQuota(provider)) {
-    await consumeDailyRequestQuota(lang);
+    await consumeDailyRequestQuota(lang, undefined, bookmarks.length);
   }
 
   const prompt = generateBatchClassifyPrompt(
@@ -157,7 +157,7 @@ export async function renameBatchWithLLM(
   const finalMaxLength = normalizeRenameLength(maxRenameLength);
 
   if (shouldConsumeDailyQuota(provider)) {
-    await consumeDailyRequestQuota(lang);
+    await consumeDailyRequestQuota(lang, undefined, bookmarks.length);
   }
 
   const prompt = generateBatchRenamePrompt(lang, bookmarks, finalMaxLength);

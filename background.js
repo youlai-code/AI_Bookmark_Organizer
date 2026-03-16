@@ -181,8 +181,11 @@ class SmartBookmarker {
         enableSmartRename,
         renameMaxLength
       );
+      console.log('[SmartBookmarker] Classification Result:', result);
       return result;
     } catch (error) {
+      console.error('[SmartBookmarker] Classification Error:', error);
+      
       // If critical timeout, rethrow to stop process or handle specifically
       if (error.message.includes('timeout') || isLLMConfigError(error) || isLLMDailyLimitError(error)) throw error;
       

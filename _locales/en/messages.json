@@ -23,6 +23,9 @@
   "navHistory": {
     "message": "History"
   },
+  "navUsageStats": {
+    "message": "Usage Stats"
+  },
   "navAbout": {
     "message": "About"
   },
@@ -37,6 +40,85 @@
   },
   "sectionAiConfig": {
     "message": "AI Model Configuration"
+  },
+  "sectionUsageStats": {
+    "message": "Usage Stats"
+  },
+  "usageStatsRefresh": {
+    "message": "Refresh"
+  },
+  "usageStatAiClassify": {
+    "message": "AI Classify Count"
+  },
+  "usageStatAiRename": {
+    "message": "AI Rename Count"
+  },
+  "usageStatInvalidDetected": {
+    "message": "Invalid Detected"
+  },
+  "usageStatAiClassifyHint": {
+    "message": "Counts each classify request (failures included)"
+  },
+  "usageStatAiRenameHint": {
+    "message": "Counts only items that actually changed title"
+  },
+  "usageStatInvalidDetectedHint": {
+    "message": "Accumulated suspected invalid items (independent of deletion)"
+  },
+  "usageStatsStorageLabel": {
+    "message": "Storage"
+  },
+  "usageStatsUpdatedAtLabel": {
+    "message": "Updated At"
+  },
+  "usageStatsLastResetAtLabel": {
+    "message": "Last Reset"
+  },
+  "usageStatsClear": {
+    "message": "Reset Stats"
+  },
+  "usageStatsClearHint": {
+    "message": "Reset only affects this stats view, not your bookmarks or history."
+  },
+  "usageStatsConfirmTitle": {
+    "message": "Reset usage stats?"
+  },
+  "usageStatsConfirmDesc": {
+    "message": "This action cannot be undone."
+  },
+  "usageStatsCancel": {
+    "message": "Cancel"
+  },
+  "usageStatsConfirm": {
+    "message": "Confirm Reset"
+  },
+  "usageStatsNeverReset": {
+    "message": "Never"
+  },
+  "usageStatsLoading": {
+    "message": "Loading..."
+  },
+  "usageStatsLoaded": {
+    "message": "Refreshed"
+  },
+  "usageStatsLoadFailed": {
+    "message": "Load failed: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "usageStatsCleared": {
+    "message": "Reset"
+  },
+  "usageStatsClearFailed": {
+    "message": "Reset failed: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   },
   "llmProvider": {
     "message": "LLM Provider"
@@ -440,6 +522,21 @@
   },
   "faqAnswerFloatingButton2": {
     "message": "Some websites may already be added to the hidden list."
+  },
+  "faqQuestionUnlimitedBulk": {
+    "message": "How to process bookmarks in bulk without limits?"
+  },
+  "faqAnswerUnlimitedBulk1": {
+    "message": "Due to AI costs, you can configure your own AI model (e.g., DeepSeek API) for unlimited usage."
+  },
+  "faqQuestionPrivacy": {
+    "message": "Privacy & Security"
+  },
+  "faqAnswerPrivacy1": {
+    "message": "We only extract necessary page content for AI classification and do not collect personal data."
+  },
+  "faqAnswerPrivacyLink": {
+    "message": "View Privacy Policy"
   },
   "supportTitle": {
     "message": "Support the Author"

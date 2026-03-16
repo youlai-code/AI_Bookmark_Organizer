@@ -62,6 +62,18 @@
             </span>
             <span data-i18n="navHistory">历史记录</span>
           </li>
+          <li class="nav-item" data-tab="usage">
+            <span class="icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 3v18h18"></path>
+                <path d="M7 15v3"></path>
+                <path d="M12 11v7"></path>
+                <path d="M17 7v11"></path>
+              </svg>
+            </span>
+            <span data-i18n="navUsageStats">使用统计</span>
+          </li>
           <li class="nav-item" data-tab="about">
             <span class="icon">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -382,6 +394,54 @@
           </div>
         </div>
 
+        <div id="usage" class="tab-view">
+          <div class="card">
+            <div class="card-header usage-stats-header">
+              <h3 data-i18n="sectionUsageStats">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round"
+                  style="vertical-align: text-bottom; margin-right: 8px;">
+                  <path d="M3 3v18h18"></path>
+                  <path d="M7 15v3"></path>
+                  <path d="M12 11v7"></path>
+                  <path d="M17 7v11"></path>
+                </svg>
+                使用统计
+              </h3>
+              <button id="usageStatsRefresh" class="text-btn" data-i18n="usageStatsRefresh">刷新</button>
+            </div>
+
+            <div class="card-body">
+              <div class="usage-stats-grid">
+                <div class="usage-stat-card">
+                  <div class="usage-stat-label" data-i18n="usageStatAiClassify">AI 分类次数</div>
+                  <div id="usageStatAiClassifyValue" class="usage-stat-value">0</div>
+                  <div class="usage-stat-hint" data-i18n="usageStatAiClassifyHint">每次发起分类请求计 1 次（失败也计数）</div>
+                </div>
+
+                <div class="usage-stat-card">
+                  <div class="usage-stat-label" data-i18n="usageStatAiRename">AI 重命名次数</div>
+                  <div id="usageStatAiRenameValue" class="usage-stat-value">0</div>
+                  <div class="usage-stat-hint" data-i18n="usageStatAiRenameHint">仅实际发生标题变化的条目计数</div>
+                </div>
+
+                <div class="usage-stat-card">
+                  <div class="usage-stat-label" data-i18n="usageStatInvalidDetected">检测失效数量</div>
+                  <div id="usageStatInvalidDetectedValue" class="usage-stat-value">0</div>
+                  <div class="usage-stat-hint" data-i18n="usageStatInvalidDetectedHint">疑似失效条目累计，与是否删除无关</div>
+                </div>
+              </div>
+
+              <div class="usage-stats-actions">
+                <div class="usage-actions-left">
+                  <button id="usageStatsClear" class="primary-btn danger" data-i18n="usageStatsClear">清零统计</button>
+                </div>
+                <div id="usageStatsStatus" class="usage-stats-status"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div id="about" class="tab-view">
           <div class="card">
 
@@ -435,6 +495,18 @@
                   <li data-i18n="faqAnswerFloatingButton1">检查设置中是否开启了“显示悬浮智能收藏按钮”</li>
                   <li data-i18n="faqAnswerFloatingButton2">某些网站可能已被加入隐藏列表</li>
                 </ul>
+                <h4 data-i18n="faqQuestionUnlimitedBulk">如何无限量批量处理书签？</h4>
+                <ul>
+                  <li data-i18n="faqAnswerUnlimitedBulk1">由于 AI 模型成本问题，您可以配置自己的 AI 模型（如 DeepSeek API）来获得无限次数</li>
+                </ul>
+                <h4 data-i18n="faqQuestionPrivacy">关于隐私安全</h4>
+                <ul>
+                  <li data-i18n="faqAnswerPrivacy1">我们仅提取必要的网页信息用于 AI 分类，不会收集您的个人数据</li>
+                  <li>
+                    <a href="https://github.com/youlai-code/AI_Bookmark_Organizer/blob/main/PRIVACY.md" target="_blank"
+                      data-i18n="faqAnswerPrivacyLink" style="color: #4D6BFE; text-decoration: underline;">查看隐私策略文档</a>
+                  </li>
+                </ul>
               </section>
 
               <section class="about-section">
@@ -464,6 +536,17 @@
   </div>
 
   <script type="module" src="options.js"></script>
+
+  <div id="usageStatsConfirmModal" class="modal-overlay" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="usageStatsConfirmTitle">
+      <div class="modal-title" id="usageStatsConfirmTitle" data-i18n="usageStatsConfirmTitle">确认清零使用统计？</div>
+      <div class="modal-desc" data-i18n="usageStatsConfirmDesc">此操作不可撤销。</div>
+      <div class="modal-actions">
+        <button id="usageStatsConfirmCancel" class="text-btn" data-i18n="usageStatsCancel">取消</button>
+        <button id="usageStatsConfirmOk" class="primary-btn" data-i18n="usageStatsConfirm">确认清零</button>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>
